@@ -4,7 +4,7 @@
   "description": "'library for common util things to use for developing nice javascript apps'",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc --reporter=lcov --reporter=text mocha \"*.test.js\""
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/tomasruizr/trutils/issues"
   },
-  "homepage": "https://github.com/tomasruizr/trutils#readme"
+  "homepage": "https://github.com/tomasruizr/trutils#readme",
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "nyc": "^12.0.2"
+  }
 }
