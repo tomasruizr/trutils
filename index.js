@@ -40,6 +40,48 @@ function createNew( constructors, ...args ) {
   return newObj;
 }
 
+function monad(obj, objectPath, nValue) {
+  const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
+  const part = parts.shift();
+  if (nValue){
+    if (typeof obj[part] == 'object'){
+      return monad(obj[part], parts, nValue);
+    } else {
+      return obj[part] = nValue;
+    }
+  } else {
+    if (typeof obj[part] == 'object'){
+      return monad(obj[part], parts);
+    } else {
+      return obj[part];
+    }  
+  }
+}
+
+function validateParams(obj, objectPath) {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error ('The first argument must be an object');
+  if (typeof objectPath !== 'string' && !Array.isArray(objectPath)) throw new Error (`The object Path must be a string in the format 'x.y.z' or an array ['x','y','z']`);
+}
+
+
+function mExists(obj, objectPath) {
+  validateParams(obj, objectPath);
+  return !!monad(obj, objectPath);
+}
+
+function mGet(obj, objectPath) {
+  validateParams(obj, objectPath);
+  return monad(obj, objectPath);  
+}
+
+function mSet(obj, objectPath, nValue) {
+  validateParams(obj, objectPath);
+  return monad(obj, objectPath, nValue);
+}
+
 module.exports = {
-  createNew
+  createNew,
+  mExists,
+  mGet,
+  mSet
 };
