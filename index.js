@@ -40,14 +40,15 @@ function createNew( constructors, ...args ) {
   return newObj;
 }
 
-function monad(obj, objectPath, nValue) {
+function monad(obj, objectPath, nValue, cascadeCreate) {
   const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
   const part = parts.shift();
   if (nValue){
-    if (typeof obj[part] == 'object'){
-      return monad(obj[part], parts, nValue);
+    if (cascadeCreate && obj[part] === undefined && parts.length) obj[part] = {};
+    if (typeof obj[part] === 'object'){
+      return monad(obj[part], parts, nValue, cascadeCreate);
     } else {
-      return obj[part] = nValue;
+     return obj[part] = nValue;
     }
   } else {
     if (typeof obj[part] == 'object'){
@@ -74,9 +75,9 @@ function mGet(obj, objectPath) {
   return monad(obj, objectPath);  
 }
 
-function mSet(obj, objectPath, nValue) {
+function mSet(obj, objectPath, nValue, cascadeCreate = false) {
   validateParams(obj, objectPath);
-  return monad(obj, objectPath, nValue);
+  return monad(obj, objectPath, nValue, cascadeCreate);
 }
 
 module.exports = {

@@ -131,3 +131,14 @@ describe('mSet by string', function() {
     assert.equal(obj.b.d.f.x, "new Value");
   });
 });
+
+describe('mSet - cascadeInsert', function() {
+  it('Deep creates a nested object structure of 1 level if does not exists', () => {
+    mSet(obj, "new.val", 5, true);  
+    assert.equal(obj.new.val, 5);
+  });
+  it('Deep creates a nested object structure of n level if does not exists', () => {
+    mSet(obj, "new.deep.a.b.c", 5, true);  
+    assert.equal(obj.new.deep.a.b.c, 5);
+  });
+});
