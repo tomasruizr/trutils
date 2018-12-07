@@ -2,6 +2,14 @@ const { mGet, mSet, mExists } = require( './index' );
 const assert = require( 'assert' );
 
 let obj = {
+  arr: [{
+      data1: 1,
+      data2: 2
+    },{
+      data3: 3,
+      data4: 4
+    }
+  ],
   a: "nivel 1",
   b: {
     c: "nivel 2",
@@ -67,7 +75,7 @@ describe('mGet by string', function() {
   });
 });
 
-describe('mGet by string', function() {
+describe('mGet by array', function() {
   it('gets the level 1 values', ()=>{
     assert.equal(mGet(obj, ["a"]), "nivel 1");
   });
@@ -80,6 +88,15 @@ describe('mGet by string', function() {
   it('gets the level 4 values', ()=>{
     assert.equal(mGet(obj, ["b","d","f","g"]), "nivel 4");
   });
+});
+
+describe('mGet by string nested array of objects', function() {
+  it('gets the objects inside of array', () => {
+    assert.equal(mGet(obj, "arr.0.data1"), 1);
+    assert.equal(mGet(obj, "arr.0.data2"), 2);
+    assert.equal(mGet(obj, "arr.1.data3"), 3);
+    assert.equal(mGet(obj, "arr.1.data4"), 4);
+  })
 });
 
 describe('mExists by string', function() {
