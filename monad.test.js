@@ -4,7 +4,8 @@ const assert = require( 'assert' );
 let obj = {
   arr: [{
       data1: 1,
-      data2: 2
+      data2: 2,
+      arr2: ["a","b","c"]
     },{
       data3: 3,
       data4: 4
@@ -96,6 +97,12 @@ describe('mGet by string nested array of objects', function() {
     assert.equal(mGet(obj, "arr.0.data2"), 2);
     assert.equal(mGet(obj, "arr.1.data3"), 3);
     assert.equal(mGet(obj, "arr.1.data4"), 4);
+  })
+});
+
+describe('mGet by string nested array of array', function() {
+  it('gets the objects inside of array', () => {
+    assert.deepEqual(mGet(obj, "arr.0.arr2"), ["a","b","c"]);
   })
 });
 

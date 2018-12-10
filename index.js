@@ -51,7 +51,7 @@ function monad(obj, objectPath, nValue, cascadeCreate) {
      return obj[part] = nValue;
     }
   } else {
-    if (typeof obj[part] == 'object'){
+    if (typeof obj[part] === 'object' && parts.length){
       return monad(obj[part], parts);
     } else {
       return obj[part];
