@@ -44,11 +44,15 @@ function monad(obj, objectPath, nValue, cascadeCreate) {
   const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
   const part = parts.shift();
   if (nValue){
-    if (cascadeCreate && obj[part] === undefined && parts.length) obj[part] = {};
-    if (typeof obj[part] === 'object'){
+    if (parts.length){
+      if (cascadeCreate && obj[part] === undefined) obj[part] = {};
       return monad(obj[part], parts, nValue, cascadeCreate);
     } else {
-     return obj[part] = nValue;
+      if (Array.isArray(obj[part])){
+        obj[part].push(nValue);
+        return;
+      }
+      return obj[part] = nValue;
     }
   } else {
     if (typeof obj[part] === 'object' && parts.length){

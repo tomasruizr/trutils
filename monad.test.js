@@ -166,3 +166,11 @@ describe('mSet - cascadeInsert', function() {
     assert.equal(obj.new.deep.a.b.c, 5);
   });
 });
+
+describe('mSet - array push', function() {
+  it('Pushes to an array if the last element is an array', () => {
+    mSet(obj, "arr.0.arr2", "d");  
+    assert.equal(obj.arr[0].arr2.length, 4);
+    assert.equal(obj.arr[0].arr2[3], "d");
+  });
+});
