@@ -84,9 +84,23 @@ function mSet(obj, objectPath, nValue, cascadeCreate = false) {
   return monad(obj, objectPath, nValue, cascadeCreate);
 }
 
+function findKey(obj, key) {
+  const keys = Object.keys(obj);
+  let val;
+  if (keys.includes(key)) return obj[key];
+  for (const k of keys){
+    if (typeof obj[k] === 'object'){
+      val = findKey(obj[k], key);
+      if (val) return val;
+    } 
+  }
+}
+
+
 module.exports = {
   createNew,
   mExists,
   mGet,
-  mSet
+  mSet,
+  findKey
 };
