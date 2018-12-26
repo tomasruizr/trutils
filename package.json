@@ -1,6 +1,6 @@
 {
   "name": "trutils",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "'library for common util things to use for developing nice javascript apps'",
   "main": "index.js",
   "scripts": {
