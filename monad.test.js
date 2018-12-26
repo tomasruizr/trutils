@@ -61,6 +61,13 @@ describe('validateParams', () => {
   });
 })
 
+describe('mGet of null object', function() {
+	it('returns the falsy value of object', () => {
+		assert.equal(mGet(undefined, 'a'), undefined);
+		assert.equal(mGet(null, 'a'), null);
+	});
+});
+
 describe('mGet by string', function() {
   it('gets the level 1 values', ()=>{
     assert.equal(mGet(obj, "a"), "nivel 1");
