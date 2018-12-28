@@ -181,3 +181,18 @@ describe('mSet - array push', function() {
     assert.equal(obj.arr[0].arr2[3], "d");
   });
 });
+
+describe('mSet - forceArray', function() {
+	it('Creates and Pushes to an array if cascade create and force Array == true', () => {
+	  mSet(obj, "arrNew", "newValue", true, true);  
+	  assert.equal(Array.isArray(obj.arrNew), true);
+	  assert.equal(obj.arrNew.length, 1);
+	  assert.equal(obj.arrNew[0], "newValue");
+	});
+	it('Creates and Pushes to a nested array if cascade create and force Array == true', () => {
+		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", true, true);  
+		assert.equal(Array.isArray(obj.arr[0].arr2[5].newObj.newArr), true);
+		assert.equal(obj.arr[0].arr2[5].newObj.newArr.length, 1);
+		assert.equal(obj.arr[0].arr2[5].newObj.newArr[0], "newValue");
+	  });
+  });

@@ -39,17 +39,21 @@ function createNew(constructors, ...args) {
 	return newObj;
 }
 
-function monad(obj, objectPath, nValue, cascadeCreate) {
+function monad(obj, objectPath, nValue, cascadeCreate, forceArray) {
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
 	const part = parts.shift();
 	if (nValue) {
 		if (parts.length) {
 			if (cascadeCreate && obj[part] === undefined) obj[part] = {};
-			return monad(obj[part], parts, nValue, cascadeCreate);
+			return monad(obj[part], parts, nValue, cascadeCreate, forceArray);
 		} else {
 			if (Array.isArray(obj[part])) {
 				obj[part].push(nValue);
 				return;
+			} else if (!obj[part] && forceArray){
+				obj[part] = [];
+				obj[part].push(nValue);
+				return obj;
 			}
 			return obj[part] = nValue;
 		}
@@ -79,10 +83,11 @@ function mGet(obj, objectPath) {
 	return obj ? monad(obj, objectPath) : obj;
 }
 
-function mSet(obj, objectPath, nValue, cascadeCreate = false) {
+function mSet(obj, objectPath, nValue, cascadeCreate = false, forceArray = false) {
 	validateParams(obj, objectPath);
-	return monad(obj, objectPath, nValue, cascadeCreate);
+	return monad(obj, objectPath, nValue, cascadeCreate, forceArray);
 }
+
 
 function findKey(obj, key) {
 	const keys = Object.keys(obj);
