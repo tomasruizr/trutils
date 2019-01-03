@@ -7,7 +7,7 @@ function getClassProto(classProto) {
 	});
 	return proto;
 }
-
+// TODO: Take a look into constructor property
 function createNew(constructors, ...args) {
 	let newObj = {};
 	let protos = [];
@@ -50,7 +50,7 @@ function monad(obj, objectPath, nValue, cascadeCreate, forceArray) {
 			if (Array.isArray(obj[part])) {
 				obj[part].push(nValue);
 				return;
-			} else if (!obj[part] && forceArray){
+			} else if (!obj[part] && forceArray) {
 				obj[part] = [];
 				obj[part].push(nValue);
 				return obj;
@@ -101,11 +101,20 @@ function findKey(obj, key) {
 	}
 }
 
+function extend(sub, base) {
+	sub.prototype = Object.assign({}, sub.prototype, base.prototype);
+	Object.defineProperty(sub.prototype, 'constructor', {
+		enumerable: false,
+		value: sub
+	});
+}
+
 
 module.exports = {
 	createNew,
 	mExists,
 	mGet,
 	mSet,
-	findKey
+	findKey,
+	extend
 };
