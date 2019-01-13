@@ -161,6 +161,10 @@ describe('mSet by string', function() {
     mSet(obj, "b.d.f.x", "new Value");
     assert.equal(obj.b.d.f.x, "new Value");
   });
+  it('Sets a new Value of false', () => {
+	mSet(obj, "b.d.bool", false);
+	assert.equal(obj.b.d.bool, false);
+  });
 });
 
 describe('mSet - cascadeInsert', function() {

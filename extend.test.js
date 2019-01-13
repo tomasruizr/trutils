@@ -18,7 +18,7 @@ proto2.prototype.someFunction2 = function someFunction2() {
 }
 extend(proto2, proto1);
 
-describe.only('extend', function() {
+describe('extend', function() {
 	const p1 = Object.create(proto1);
 	const p2 = new proto2("someVal");
 	it('inherit properties from one proto to another',() => {

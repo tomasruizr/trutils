@@ -42,7 +42,7 @@ function createNew(constructors, ...args) {
 function monad(obj, objectPath, nValue, cascadeCreate, forceArray) {
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
 	const part = parts.shift();
-	if (nValue) {
+	if (nValue !== undefined) {
 		if (parts.length) {
 			if (cascadeCreate && obj[part] === undefined) obj[part] = {};
 			return monad(obj[part], parts, nValue, cascadeCreate, forceArray);
