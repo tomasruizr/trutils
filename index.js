@@ -40,7 +40,7 @@ function createNew(constructors, ...args) {
 }
 
 function monad(obj, objectPath, nValue, params = {}) {
-	const {forceArray, doNotCreate} = params;
+	const {arrayPush, doNotCreate} = params;
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
 	const part = parts.shift();
 	if (nValue !== undefined) {
@@ -50,7 +50,7 @@ function monad(obj, objectPath, nValue, params = {}) {
 		} else {
 			if (Array.isArray(obj[part])) {
 				obj[part].push(nValue);
-			} else if (!obj[part] && forceArray) {
+			} else if (!obj[part] && arrayPush) {
 				obj[part] = [];
 				obj[part].push(nValue);
 			} else {
@@ -84,9 +84,9 @@ function mGet(obj, objectPath) {
 	return obj ? monad(obj, objectPath) : obj;
 }
 
-function mSet(obj, objectPath, nValue, cascadeCreate = false, forceArray = false) {
+function mSet(obj, objectPath, nValue, cascadeCreate = false, arrayPush = false) {
 	validateParams(obj, objectPath);
-	return monad(obj, objectPath, nValue, cascadeCreate, forceArray);
+	return monad(obj, objectPath, nValue, cascadeCreate, arrayPush);
 }
 
 
