@@ -165,18 +165,33 @@ describe('mSet by string', function() {
 	mSet(obj, "b.d.bool", false);
 	assert.equal(obj.b.d.bool, false);
   });
+  it('Returns the object', () => {
+	const newObj = mSet(obj, "b.d.someProp", true);
+	assert.deepEqual(obj, newObj);
+  });
 });
 
 describe('mSet - cascadeInsert', function() {
   it('Deep creates a nested object structure of 1 level if does not exists', () => {
-    mSet(obj, "new.val", 5, true);  
+    mSet(obj, "new.val", 5);  
     assert.equal(obj.new.val, 5);
   });
   it('Deep creates a nested object structure of n level if does not exists', () => {
-    mSet(obj, "new.deep.a.b.c", 5, true);  
+    mSet(obj, "new.deep.a.b.c", 5);  
     assert.equal(obj.new.deep.a.b.c, 5);
   });
 });
+
+describe('mSet - doNotCreate', function() {
+	it('Do Not Deep creates a nested object structure of 1 level if does not exists', () => {
+	  mSet(obj, "new.val", 5, {doNotCreate:true});  
+	  assert.equal(obj.new.val2, undefined);
+	});
+	it('Deep creates a nested object structure of n level if does not exists', () => {
+	  mSet(obj, "new.deep.a.b.c", 5, {doNotCreate:true});  
+	  assert.equal(obj.new.deep.a.b.c2, undefined);
+	});
+  });
 
 describe('mSet - array push', function() {
   it('Pushes to an array if the last element is an array', () => {
@@ -188,13 +203,13 @@ describe('mSet - array push', function() {
 
 describe('mSet - forceArray', function() {
 	it('Creates and Pushes to an array if cascade create and force Array == true', () => {
-	  mSet(obj, "arrNew", "newValue", true, true);  
+	  mSet(obj, "arrNew", "newValue", {forceArray:true});  
 	  assert.equal(Array.isArray(obj.arrNew), true);
 	  assert.equal(obj.arrNew.length, 1);
 	  assert.equal(obj.arrNew[0], "newValue");
 	});
 	it('Creates and Pushes to a nested array if cascade create and force Array == true', () => {
-		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", true, true);  
+		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", {forceArray:true});  
 		assert.equal(Array.isArray(obj.arr[0].arr2[5].newObj.newArr), true);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr.length, 1);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr[0], "newValue");

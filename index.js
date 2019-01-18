@@ -39,24 +39,25 @@ function createNew(constructors, ...args) {
 	return newObj;
 }
 
-function monad(obj, objectPath, nValue, cascadeCreate, forceArray) {
+function monad(obj, objectPath, nValue, params = {}) {
+	const {forceArray, doNotCreate} = params;
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
 	const part = parts.shift();
 	if (nValue !== undefined) {
 		if (parts.length) {
-			if (cascadeCreate && obj[part] === undefined) obj[part] = {};
-			return monad(obj[part], parts, nValue, cascadeCreate, forceArray);
+			if (!doNotCreate && obj[part] === undefined) obj[part] = {};
+			monad(obj[part], parts, nValue, params)
 		} else {
 			if (Array.isArray(obj[part])) {
 				obj[part].push(nValue);
-				return;
 			} else if (!obj[part] && forceArray) {
 				obj[part] = [];
 				obj[part].push(nValue);
-				return obj;
+			} else {
+				obj[part] = nValue;
 			}
-			return obj[part] = nValue;
 		}
+		return obj;
 	} else {
 		if (typeof obj[part] === 'object' && parts.length) {
 			return monad(obj[part], parts);
