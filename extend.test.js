@@ -1,4 +1,4 @@
-const { extend, createNew } = require('./index');
+const { extend } = require('./index');
 const assert = require( 'assert' );
 
 let proto1 = function(initVal){
@@ -9,14 +9,28 @@ let proto1 = function(initVal){
 proto1.prototype.someFunction1 = function someFunction1() {
 	return "someFunction1"
 }
+proto1.prototype.someFunctionOverlap = function someFunctionOverlap() {
+	return "someFunctionToBeOverlaped"
+}
+proto1.prototype.someFunctionOverride = function someFunctionOverride() {
+	return "someFunctionToBeOverrided"
+}
+
 let proto2 = function(initVal){
 	proto1.call(this, initVal);
 	this.name = 'someName2';
 }
+extend(proto2, proto1);
 proto2.prototype.someFunction2 = function someFunction2() {
 	return "someFunction2"
 }
-extend(proto2, proto1);
+proto2.prototype.someFunctionOverlap = function someFunctionOverlap() {
+	return "someFunctionOverlaped"
+}
+proto2.prototype.someFunctionOverride = function someFunctionOverride() {
+	return "someNewValue"
+}
+
 
 describe('extend', function() {
 	const p1 = Object.create(proto1);
@@ -35,4 +49,11 @@ describe('extend', function() {
 	it('has the constructor property of child proto', () => {
 		assert.equal(p2.constructor.name, "proto2");
 	});
+	it('overlaps the behavior of base class', () => {
+		assert.equal(p2.someFunctionOverlap(), 'someFunctionOverlaped');
+	})
+	it('overrides the behavior of base class', () => {
+		assert.equal(p2.someFunctionOverride(), 'someNewValue');
+		assert.equal(p2.__proto__.__proto__.someFunctionOverride(), 'someFunctionToBeOverrided');
+	})
 });

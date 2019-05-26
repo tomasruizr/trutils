@@ -102,11 +102,12 @@ function findKey(obj, key) {
 	}
 }
 
-function extend(sub, base) {
-	sub.prototype = Object.assign({}, sub.prototype, base.prototype);
-	Object.defineProperty(sub.prototype, 'constructor', {
 		enumerable: false,
-		value: sub
+function extend(subProto, baseProto) {
+	subProto.prototype = Object.create(baseProto.prototype);
+	Object.defineProperty(subProto.prototype, 'constructor', {
+		enumerable: false,
+		value: subProto
 	});
 }
 
