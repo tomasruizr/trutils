@@ -102,7 +102,14 @@ function findKey(obj, key) {
 	}
 }
 
+function mixin(top, ...funcs) {
+	top.prototype = Object.assign({}, ...(funcs.map(f=>f.prototype)), top.prototype);
+	Object.defineProperty(top.prototype, 'constructor', {
 		enumerable: false,
+		value: top
+	});
+}
+
 function extend(subProto, baseProto) {
 	subProto.prototype = Object.create(baseProto.prototype);
 	Object.defineProperty(subProto.prototype, 'constructor', {
@@ -118,5 +125,6 @@ module.exports = {
 	mGet,
 	mSet,
 	findKey,
+	mixin,
 	extend
 };
