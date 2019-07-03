@@ -69,7 +69,7 @@ function monad(obj, objectPath, nValue, params = {}) {
 
 function validateParams(obj, objectPath) {
 	if (!obj) return obj;
-	if (typeof obj !== 'object' || Array.isArray(obj)) throw new Error('The first argument must be an object');
+	if (typeof obj !== 'object') throw new Error('The first argument must be an object');
 	if (typeof objectPath !== 'string' && !Array.isArray(objectPath)) throw new Error(`The object Path must be a string in the format 'x.y.z' or an array ['x','y','z']`);
 }
 

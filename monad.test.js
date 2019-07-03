@@ -23,6 +23,8 @@ let obj = {
   }
 }
 
+let arr = ['asdf', 1, true, obj]
+
 describe('validateParams', () => {
   it('throws error if first argument is not an object', () => {
     try{
@@ -37,11 +39,6 @@ describe('validateParams', () => {
     }
     try{
       mGet("sf");
-    } catch (e){
-      assert.equal(e.message,"The first argument must be an object");
-    }
-    try{
-      mGet(["sf"]);
     } catch (e){
       assert.equal(e.message,"The first argument must be an object");
     }
@@ -112,6 +109,24 @@ describe('mGet by string nested array of array', function() {
     assert.deepEqual(mGet(obj, "arr.0.arr2"), ["a","b","c"]);
   })
 });
+
+describe('mGet - Arrays', function() {
+  it('gets an index from an array including nested objects', () => {
+    assert.equal(mGet(arr, "0"), 'asdf');
+    assert.equal(mGet(arr, "1"), 1);
+    assert.equal(mGet(arr, "2"), true);
+    assert.equal(mGet(arr, "3.arr.0.data1"), 1);
+    assert.equal(mGet(arr, "3.arr.0.data2"), 2);
+    assert.equal(mGet(arr, "3.arr.1.data3"), 3);
+    assert.equal(mGet(arr, "3.arr.1.data4"), 4);
+    assert.equal(mGet(arr, "3.a"), "nivel 1");
+    assert.equal(mGet(arr, "3.b.c"), "nivel 2");
+    assert.equal(mGet(arr, "3.b.d.e"), "nivel 3");
+    assert.equal(mGet(arr, "3.b.d.f.g"), "nivel 4");
+  });
+  
+});
+
 
 describe('mExists by string', function() {
   it('gets the level 1 values', ()=>{
@@ -213,5 +228,5 @@ describe('mSet - arrayPush', function() {
 		assert.equal(Array.isArray(obj.arr[0].arr2[5].newObj.newArr), true);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr.length, 1);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr[0], "newValue");
-	  });
   });
+});
