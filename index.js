@@ -9,6 +9,7 @@ function getClassProto(classProto) {
 }
 // TODO: Take a look into constructor property
 function createNew(constructors, ...args) {
+	console.warn('DEPRECATION WARNING: trutils.createNew is deprecated');
 	let newObj = {};
 	let protos = [];
 	if (!Array.isArray(constructors)) constructors = [constructors];
@@ -103,6 +104,7 @@ function findKey(obj, key) {
 }
 
 function mixin(top, ...funcs) {
+	console.warn('DEPRECATION WARNING: trutils.mixin is deprecated');
 	top.prototype = Object.assign({}, ...(funcs.map(f=>f.prototype)), top.prototype);
 	Object.defineProperty(top.prototype, 'constructor', {
 		enumerable: false,
@@ -111,6 +113,7 @@ function mixin(top, ...funcs) {
 }
 
 function extend(subProto, baseProto) {
+	console.warn('DEPRECATION WARNING: trutils.extend is deprecated');
 	subProto.prototype = Object.create(baseProto.prototype);
 	Object.defineProperty(subProto.prototype, 'constructor', {
 		enumerable: false,
