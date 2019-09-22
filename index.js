@@ -61,6 +61,10 @@ function findKey(obj, key) {
 	}
 }
 
+function create(proto, properties){
+	return Object.assign(Object.create(proto), properties);
+}
+
 
 
 module.exports = {
@@ -68,4 +72,5 @@ module.exports = {
 	mGet,
 	mSet,
 	findKey,
+	create
 };
