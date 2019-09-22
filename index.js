@@ -18,7 +18,7 @@ function monad(obj, objectPath, nValue, params = {}) {
 		}
 		return obj;
 	} else {
-		if (typeof obj[part] === 'object' && parts.length) {
+		if (typeof obj[part] === 'object' && obj[part] !== null && parts.length) {
 			return monad(obj[part], parts);
 		} else {
 			return obj[part];

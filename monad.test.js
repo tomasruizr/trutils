@@ -18,9 +18,11 @@ let obj = {
       e: "nivel 3",
       f: {
         g: "nivel 4"
-      }
+      },
+      h: null
     }
-  }
+  },
+  c: null
 }
 
 let arr = ['asdf', 1, true, obj]
@@ -77,6 +79,15 @@ describe('mGet by string', function() {
   });
   it('gets the level 4 values', ()=>{
     assert.equal(mGet(obj, "b.d.f.g"), "nivel 4");
+  });
+});
+
+describe('mGet when value is null and parts is not empty', function() {
+  it('gets the level 1 values', ()=>{
+    assert.equal(mGet(obj, "c.x.x"), null);
+  });
+  it('gets the level 3 values', ()=>{
+    assert.equal(mGet(obj, "b.d.h.x"), null);
   });
 });
 
