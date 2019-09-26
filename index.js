@@ -61,7 +61,7 @@ function findKey(obj, key) {
 	}
 }
 
-function create(proto, properties){
+function createWith(proto, properties){
 	return Object.assign(Object.create(proto), properties);
 }
 
@@ -72,5 +72,5 @@ module.exports = {
 	mGet,
 	mSet,
 	findKey,
-	create
+	createWith,
 };
