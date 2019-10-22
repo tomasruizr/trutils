@@ -1,3 +1,5 @@
+const merge = require('mergerino').default;
+
 function monad(obj, objectPath, nValue, params = {}) {
 	const {arrayPush, doNotCreate} = params;
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
@@ -43,9 +45,9 @@ function mGet(obj, objectPath) {
 	return obj ? monad(obj, objectPath) : obj;
 }
 
-function mSet(obj, objectPath, nValue, cascadeCreate = false, arrayPush = false) {
+function mSet(obj, objectPath, nValue, arrayPush = false, doNotCreate = false) {
 	validateParams(obj, objectPath);
-	return monad(obj, objectPath, nValue, cascadeCreate, arrayPush);
+	return monad(obj, objectPath, nValue, {doNotCreate, arrayPush});
 }
 
 
@@ -65,7 +67,7 @@ function createWith(proto, properties){
 	return Object.assign(Object.create(proto), properties);
 }
 
-function compose(protos, initialObject = {}){
+function deepCreateWith(protos, initialObject = {}){
 	protos = Array.isArray(protos) ? protos : [protos];
 	const protoChain = protos.reverse().reduce((acc, current) => {
 		return Object.setPrototypeOf(current, acc);
@@ -81,5 +83,6 @@ module.exports = {
 	mSet,
 	findKey,
 	createWith,
-	compose
+	deepCreateWith,
+	merge
 };

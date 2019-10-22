@@ -210,11 +210,11 @@ describe('mSet - cascadeInsert', function() {
 
 describe('mSet - doNotCreate', function() {
 	it('Do Not Deep creates a nested object structure of 1 level if does not exists', () => {
-	  mSet(obj, "new.val", 5, {doNotCreate:true});  
+	  mSet(obj, "new.val", 5, false, true);  
 	  assert.equal(obj.new.val2, undefined);
 	});
 	it('Deep creates a nested object structure of n level if does not exists', () => {
-	  mSet(obj, "new.deep.a.b.c", 5, {doNotCreate:true});  
+	  mSet(obj, "new.deep.a.b.c", 5, false, true);  
 	  assert.equal(obj.new.deep.a.b.c2, undefined);
 	});
   });
@@ -229,13 +229,13 @@ describe('mSet - array push', function() {
 
 describe('mSet - arrayPush', function() {
 	it('Creates and Pushes to an array if cascade create and force Array == true', () => {
-	  mSet(obj, "arrNew", "newValue", {arrayPush:true});  
+	  mSet(obj, "arrNew", "newValue", true);  
 	  assert.equal(Array.isArray(obj.arrNew), true);
 	  assert.equal(obj.arrNew.length, 1);
 	  assert.equal(obj.arrNew[0], "newValue");
 	});
 	it('Creates and Pushes to a nested array if cascade create and force Array == true', () => {
-		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", {arrayPush:true});  
+		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", true);  
 		assert.equal(Array.isArray(obj.arr[0].arr2[5].newObj.newArr), true);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr.length, 1);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr[0], "newValue");
