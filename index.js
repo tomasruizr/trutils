@@ -6,7 +6,7 @@ function monad(obj, objectPath, nValue, params = {}) {
 	const part = parts.shift();
 	if (nValue !== undefined) {
 		if (parts.length) {
-			if (!doNotCreate && obj[part] === undefined) obj[part] = {};
+			if (!doNotCreate && [undefined, null].includes(obj[part])) obj[part] = {};
 			monad(obj[part], parts, nValue, params)
 		} else {
 			if (Array.isArray(obj[part])) {
