@@ -22,6 +22,6 @@
     "nyc": "^14.1.1"
   },
   "dependencies": {
-    "mergerino": "~0.4.0"
+    "transducers.js": "~0.3.2"
   }
 }
