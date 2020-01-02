@@ -1,4 +1,4 @@
-const { createWith } = require( './index' );
+const { createWith } = require( '../index' );
 const assert = require( 'assert' );
 
 let obj = {

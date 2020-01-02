@@ -1,4 +1,4 @@
-const { mGet, mSet, mExists } = require( './index' );
+const { mGet, mSet, mExists } = require( '../index' );
 const assert = require( 'assert' );
 
 let obj = {

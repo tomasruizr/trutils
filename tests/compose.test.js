@@ -1,4 +1,4 @@
-const { deepCreateWith } = require( './index' );
+const { deepCreateWith } = require( '../index' );
 const assert = require( 'assert' );
 
 let obj = {

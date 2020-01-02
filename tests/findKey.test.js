@@ -1,4 +1,4 @@
-const { findKey } = require( './index' );
+const { findKey } = require( '../index' );
 const assert = require( 'assert' );
 
 let obj = {

@@ -1,4 +1,4 @@
-const { merge, mergeCopy } = require( './index' );
+const { merge, mergeCopy } = require( '../index' );
 const assert = require( 'assert' );
 describe('mergeCopy', function() {
   it('generates a curried function when no source supplied', () => {
