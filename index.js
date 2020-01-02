@@ -13,8 +13,7 @@ const compose = (...functions) =>
 const pipe = (...functions) => 
   functions.reduceRight((accumulator, fn) => (...args) => accumulator(fn(...args)), x=>x);
 
-function monad(obj, objectPath, nValue, params = {}) {
-	const {arrayPush, doNotCreate} = params;
+function monad(obj, objectPath, nValue, {arrayPush = false, doNotCreate = false}) {
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
 	const part = parts.shift();
 	if (nValue !== undefined) {
@@ -52,9 +51,19 @@ function mGet(obj, objectPath) {
 	return obj ? monad(obj, objectPath) : obj;
 }
 
-function mSet(obj, objectPath, nValue, arrayPush = false, doNotCreate = false) {
+function mSet(obj, objectPath, nValue, {arrayPush = false, doNotCreate = false}) {
 	_validateParams(obj, objectPath);
 	return monad(obj, objectPath, nValue, {doNotCreate, arrayPush});
+}
+
+function deepGet(objectPath, obj) {
+	if (!obj) return obj => deepGet(objectPath, obj);
+	mGet(obj, objectPath);
+}
+
+function deepSet(objectPath, nValue, params, obj) {
+	if (!obj) return obj => deepSet(objectPath, nValue, params, obj);
+	mSet(obj, objectPath, nValue, params);
 }
 
 function deepFindKey(key, obj) {
@@ -135,6 +144,7 @@ module.exports = {
 	mGet,
 	mSet,
 	
+	// fp
 	curry,
 	compose,
 	pipe,
@@ -160,4 +170,6 @@ module.exports = {
 	ensureArray,
 	range,
 	deepFindKey,
+	deepGet,
+	deepSet,
 };
