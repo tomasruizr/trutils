@@ -30,11 +30,6 @@ let arr = ['asdf', 1, true, obj]
 describe('validateParams', () => {
   it('throws error if first argument is not an object', () => {
     try{
-      mGet();
-    } catch (e){
-      assert.equal(e.message,"The first argument must be an object");
-    }
-    try{
       mGet(4);
     } catch (e){
       assert.equal(e.message,"The first argument must be an object");
@@ -139,37 +134,6 @@ describe('mGet - Arrays', function() {
 });
 
 
-describe('mExists by string', function() {
-  it('gets the level 1 values', ()=>{
-    assert.equal(mExists(obj, "a"), true);
-  });
-  it('gets the level 2 values', ()=>{
-    assert.equal(mExists(obj, "b.c"), true);
-  });
-  it('gets the level 3 values', ()=>{
-    assert.equal(mExists(obj, "b.d.e"), true);
-  });
-  it('gets the level 4 values', ()=>{
-    assert.equal(mExists(obj, "b.d.f.g"), true);
-  });
-});
-
-describe('mExists by string NOT EXISTS', function() {
-  it('gets the level 1 values', ()=>{
-    assert.equal(mExists(obj, "x"), false);
-  });
-  it('gets the level 2 values', ()=>{
-    assert.equal(mExists(obj, "b.x"), false);
-  });
-  it('gets the level 3 values', ()=>{
-    assert.equal(mExists(obj, "b.d.x"), false);
-  });
-  it('gets the level 4 values', ()=>{
-    assert.equal(mExists(obj, "b.d.f.x"), false);
-  });
-});
-
-
 describe('mSet by string', function() {
   it('Sets the level 1 values', ()=>{
     mSet(obj, "x", "new Value");
@@ -229,13 +193,13 @@ describe('mSet - array push', function() {
 
 describe('mSet - arrayPush', function() {
 	it('Creates and Pushes to an array if cascade create and force Array == true', () => {
-	  mSet(obj, "arrNew", "newValue", true);  
+	  mSet(obj, "arrNew", "newValue", { arrayPush: true });  
 	  assert.equal(Array.isArray(obj.arrNew), true);
 	  assert.equal(obj.arrNew.length, 1);
 	  assert.equal(obj.arrNew[0], "newValue");
 	});
 	it('Creates and Pushes to a nested array if cascade create and force Array == true', () => {
-		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", true);  
+		mSet(obj, "arr.0.arr2.5.newObj.newArr", "newValue", {arrayPush: true});  
 		assert.equal(Array.isArray(obj.arr[0].arr2[5].newObj.newArr), true);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr.length, 1);
 		assert.equal(obj.arr[0].arr2[5].newObj.newArr[0], "newValue");

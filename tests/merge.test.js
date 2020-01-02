@@ -64,42 +64,6 @@ describe('mergeCopy', function() {
     }, state)
     assert.deepEqual(newState, { age: 10, foo: 'bar', prop: true })
   })
-  it('multi/array/falsy patches', () => {
-    const state = { foo: 'bar' }
-    const newState = pipe(
-      mergeCopy({ baz: 5 }),
-      mergeCopy({ hello: false }),
-      mergeCopy([{ arr: [1, 2, 3] }, [[{ prop: true }]], false, null]),
-      mergeCopy(undefined),
-      mergeCopy(''),
-      mergeCopy(0),
-      mergeCopy(null),
-      mergeCopy((s, m) => m(s, { age: 10 })),
-      mergeCopy([[[[[[[{ age: x => x * 3 }]]]]]]]),
-      mergeCopy(state),
-    )(state);
-    assert.notEqual(state, newState);
-    assert.deepEqual(state, { foo: 'bar' })
-    assert.deepEqual(newState, {
-      foo: 'bar',
-      baz: 5,
-      prop: true,
-      hello: false,
-      arr: [1, 2, 3],
-      age: 30
-    })
-  })
-  it('array patches', () => {
-    const arr = [1, 2, 3]
-    const newArr = pipe(
-      mergeCopy({ 2: 100 }),
-      mergeCopy({ 0: undefined }),
-      mergeCopy({ 0: 200 }),
-    )(arr)
-    assert.notEqual(arr, newArr);
-    assert.deepEqual(newArr, [200, 100]);
-    assert.deepEqual(arr, [1, 2, 3]);
-  })
   it('deep merge with arr', () => {
     const state = { foo: 'bar', deep: { arr: [1, 2, 3], prop: false } }
     const newState = mergeCopy({ deep: { arr: { 1: 20 } } }, state)
@@ -198,41 +162,6 @@ describe('merge', function() {
       assert.deepEqual(s, state)
       return merge(s, { prop: true })
     }, state)
-  })
-  it('multi/array/falsy patches', () => {
-    const state = { foo: 'bar' }
-    const newState = pipe(
-      merge({ baz: 5 }),
-      merge({ hello: false }),
-      merge([{ arr: [1, 2, 3] }, [[{ prop: true }]], false, null]),
-      merge(undefined),
-      merge(''),
-      merge(0),
-      merge(null),
-      // this would generate a new object anyway since its replacing
-      merge((s, m) => m(s, { age: 10 })),
-      // this would generate a new object anyway since its replacing
-      merge([[[[[[[{ age: x => x * 3 }]]]]]]]),
-      merge(state),
-    )(state);
-    assert.deepEqual(newState, {
-      foo: 'bar',
-      baz: 5,
-      prop: true,
-      hello: false,
-      arr: [1, 2, 3],
-      age: 30
-    })
-  })
-  it('array patches', () => {
-    const arr = [1, 2, 3]
-    const newArr = pipe(
-      merge({ 2: 100 }),
-      merge({ 0: undefined }),
-      merge({ 0: 200 }),
-    )(arr)
-    assert.equal(arr, newArr);
-    assert.deepEqual(newArr, [200, 100]);
   })
   it('deep merge with arr', () => {
     const state = { foo: 'bar', deep: { arr: [1, 2, 3], prop: false } }

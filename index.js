@@ -13,7 +13,8 @@ const compose = (...functions) =>
 const pipe = (...functions) => 
   functions.reduceRight((accumulator, fn) => (...args) => accumulator(fn(...args)), x=>x);
 
-function monad(obj, objectPath, nValue, {arrayPush = false, doNotCreate = false}) {
+function monad(obj, objectPath, nValue, params = {}) {
+	const {arrayPush = false, doNotCreate = false} = params;
 	const parts = Array.isArray(objectPath) ? objectPath : objectPath.split('.');
 	const part = parts.shift();
 	if (nValue !== undefined) {
@@ -51,9 +52,9 @@ function mGet(obj, objectPath) {
 	return obj ? monad(obj, objectPath) : obj;
 }
 
-function mSet(obj, objectPath, nValue, {arrayPush = false, doNotCreate = false}) {
+function mSet(obj, objectPath, nValue, params) {
 	_validateParams(obj, objectPath);
-	return monad(obj, objectPath, nValue, {doNotCreate, arrayPush});
+	return monad(obj, objectPath, nValue, params);
 }
 
 function deepGet(objectPath, obj) {
@@ -72,7 +73,7 @@ function deepFindKey(key, obj) {
 	if (keys.includes(key)) return obj[key];
 	for (const k of keys) {
 		if (typeof obj[k] === 'object') {
-			const val = deepFindKey(obj[k], key);
+			const val = deepFindKey(key, obj[k]);
 			if (val) return val;
 		}
 	}

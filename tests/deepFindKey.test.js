@@ -1,4 +1,4 @@
-const { findKey } = require( '../index' );
+const { deepFindKey } = require( '../index' );
 const assert = require( 'assert' );
 
 let obj = {
@@ -23,21 +23,21 @@ let obj = {
   }
 }
 
-describe('findKey', function() {
+describe('deepFindKey', function() {
   it('gets an element at root level', function() {
-    const res = findKey(obj, "a");
+    const res = deepFindKey("a", obj);
     assert.equal(res, "nivel 1");
   });
   it('gets an element at a nested level', () => {
-    const res = findKey(obj, "c");
+    const res = deepFindKey("c", obj);
     assert.equal(res, "nivel 2");
   })
   it('gets an element at three nested level', () => {
-    const res = findKey(obj, "g");
+    const res = deepFindKey("g", obj);
     assert.equal(res, "nivel 4");
   })
   it('gets an element at three nested array', () => {
-    const res = findKey(obj, "data3");
+    const res = deepFindKey("data3", obj);
     assert.equal(res, "3");
   })
   
