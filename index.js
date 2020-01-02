@@ -135,6 +135,26 @@ const isString = (theString) => typeof theString === 'string';
 const ensureArray = (theArray) => isArray(theArray) ? theArray : [theArray] 
 const range = (n) => [...Array(n).keys()]
 
+
+function measureTime(times, f) {
+  let s = new Date();
+  for (let index = 0; index < times; index++) {
+    f();
+  }
+  return new Date().valueOf()-s.valueOf();
+}
+  
+function compareTimes(title, times = 1, fns) {
+	fns = typeof fns === object ? fns : [fns];
+	const keys = Object.keys(fns);
+	const result = {};
+  for (let index = 0; index < keys.length; index++) {
+      let fnName = keys[index];
+      result[fnName] = `${measureTime(times, fns[fnName])}ms`;
+  }
+  return {[title]:result};
+}
+
 module.exports = {
 	// object prototypes creation
 	createWith,
@@ -172,4 +192,8 @@ module.exports = {
 	deepFindKey,
 	deepGet,
 	deepSet,
+
+	// benchmarks
+	compareTimes,
+  measureTime
 };
