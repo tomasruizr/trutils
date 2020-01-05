@@ -5,9 +5,9 @@ module.exports = function ( wallaby ) {
     files: [
       '*.js',
       '*.json',
-      { pattern: 'tests/*.test.js', ignore: true }
+      { pattern: 'tests/*.test.js', ignore: true },
+      { pattern: 'wallaby.config.js', ignore: true, instrument:false },
     ],
-
     tests: [
       'tests/*.test.js'
     ],

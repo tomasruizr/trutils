@@ -17,6 +17,13 @@ describe('mergeCopy', function() {
     assert.deepEqual(state, { prop: true, other: true, deep: { prop: 'foo' } });
     assert.deepEqual(newState, { other: null, deep: {} });
   })
+  it('deleting works with arrays', () => {
+    const state = { foo: 'bar', deep: { arr: [1, 2, 3], prop: false } }
+    const newState = mergeCopy({ deep: { arr: { 1: undefined } } }, state)
+    assert.notEqual(state.deep, newState.deep);
+    assert.notEqual(state.deep.arr, newState.deep.arr);
+    assert.deepEqual(newState.deep.arr, [1, 3]);
+  })
   it('function sub works', () => {
     const state = { age: 10, name: 'bob', obj: { prop: true } }
     const newState = mergeCopy({

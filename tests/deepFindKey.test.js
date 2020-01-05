@@ -1,5 +1,5 @@
 const { deepFindKey } = require( '../index' );
-const assert = require( 'assert' );
+const {assert} = require( 'chai' );
 
 let obj = {
   arr: [{
@@ -24,6 +24,12 @@ let obj = {
 }
 
 describe('deepFindKey', function() {
+  it('accepts curring', () => {
+    const res = deepFindKey("a");
+    assert.isFunction(res);
+    const result = res(obj);
+    assert.equal(result, "nivel 1");
+  });
   it('gets an element at root level', function() {
     const res = deepFindKey("a", obj);
     assert.equal(res, "nivel 1");

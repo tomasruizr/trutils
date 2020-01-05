@@ -8,7 +8,7 @@ const curry = fn =>{
 }
 
 const compose = (...functions) =>
-  functions.reduce((accumulator, fn) => (...args) => accumulator(fn(...args)) , x=>x)
+  functions.reduce((accumulator, fn) => (...args) => accumulator(fn(...args)), x=>x)
 
 const pipe = (...functions) => 
   functions.reduceRight((accumulator, fn) => (...args) => accumulator(fn(...args)), x=>x);
@@ -59,12 +59,12 @@ function mSet(obj, objectPath, nValue, params) {
 
 function deepGet(objectPath, obj) {
 	if (!obj) return obj => deepGet(objectPath, obj);
-	mGet(obj, objectPath);
+	return mGet(obj, objectPath);
 }
 
-function deepSet(objectPath, nValue, params, obj) {
-	if (!obj) return obj => deepSet(objectPath, nValue, params, obj);
-	mSet(obj, objectPath, nValue, params);
+function deepSet(objectPath, nValue, obj) {
+	if (!obj) return obj => deepSet(objectPath, nValue, obj);
+	return mSet(obj, objectPath, nValue, {});
 }
 
 function deepFindKey(key, obj) {
@@ -118,14 +118,26 @@ function deepCreateWith(protos, initialObject = {}){
 	return createWith(protoChain, initialObject);
 }
 
+function reduce(transform, init, collection) {
+	if (!collection) return coll => reduce(transform, init, coll);
+	let accumulation = init;
+	return {
+		'@@transducer/step': (accumulated, current) => {
+			accumulation = transform(accumulation, current);
+			return collection['@@transducer/step'](accumulated, current)
+		},
+		'@@transducer/result': (v) => accumulation,
+	}
+}
+
 const seq = (transform, collection) => {
-	if (!collection) return coll => seq(xf, coll);
-	t.seq(collection, transform);
+	if (!collection) return coll => seq(transform, coll);
+	return t.seq(collection, transform);
 }
 
 const into = (to, transform, collection) => {
-	if (!collection) return coll => seq(xf, coll);
-	t.into(to, collection, transform);
+	if (!collection) return coll => into(to, transform, coll);
+	return t.into(to, transform, collection);
 }
 
 const isArray = Array.isArray; 
@@ -138,7 +150,7 @@ const range = (n) => [...Array(n).keys()]
 
 
 function measureTime(times, f) {
-  let s = new Date();
+	let s = new Date();
   for (let index = 0; index < times; index++) {
     f();
   }
@@ -146,7 +158,7 @@ function measureTime(times, f) {
 }
   
 function compareTimes(title, times = 1, fns) {
-	fns = typeof fns === object ? fns : [fns];
+	fns = typeof fns === 'object' ? fns : [fns];
 	const keys = Object.keys(fns);
 	const result = {};
   for (let index = 0; index < keys.length; index++) {
@@ -177,8 +189,8 @@ module.exports = {
   filter: t.filter,
   take: t.take,
 	takeWhile: t.takeWhile,
-	reduce: t.reduce,
-  transduce: t.transduce,
+	transduce: t.transduce,
+	reduce,//: t.reduce,
   seq,
 	into,
 	
