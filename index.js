@@ -185,12 +185,17 @@ module.exports = {
 	mergeCopy,
 	
 	//transducers
+	reduce,//: t.reduce,
 	map: t.map,
   filter: t.filter,
+  remove: t.remove,
+  keep: t.keep,
   take: t.take,
 	takeWhile: t.takeWhile,
+	drop: t.drop,
+	dropWhile: t.dropWhile,
+	dedupe: t.dedupe,
 	transduce: t.transduce,
-	reduce,//: t.reduce,
   seq,
 	into,
 	
