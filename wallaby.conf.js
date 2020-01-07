@@ -3,13 +3,13 @@ module.exports = function ( wallaby ) {
   process.env.NODE_ENV = 'test';
   return {
     files: [
-      '*.js',
-      '*.json',
-      { pattern: 'tests/*.test.js', ignore: true },
-      { pattern: 'wallaby.config.js', ignore: true, instrument:false },
+      '*/*.js',
+      'modules/*.js',
+      { pattern: 'modules/*.test.js', ignore: true },
+      { pattern: 'wallaby.conf.js', ignore: true, instrument:false },
     ],
     tests: [
-      'tests/*.test.js'
+      'modules/*.test.js'
     ],
     env: {
       type: 'node'

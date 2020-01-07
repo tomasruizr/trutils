@@ -15,7 +15,7 @@
         "--timeout",
         "999999",
         "--colors",
-        "tests/*.test.js"
+        "modules/*.test.js"
       ],
       "internalConsoleOptions": "openOnSessionStart"
     },
