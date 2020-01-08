@@ -1,7 +1,7 @@
 const f = require( 'flyd' );
 const filter = require( 'flyd/module/filter' );
 const once = require( 'flyd-once' );
-const bufferCount = require( 'flyd-bufferCount' );
+const bufferCount = require( 'flyd-buffercount' );
 const { ifElse, prop, tryCatch } = require( './fp.js' );
 
 function sComposeChain( fnsArray, params = {}) {
