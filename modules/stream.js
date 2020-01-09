@@ -1,5 +1,6 @@
 const f = require( 'flyd' );
 const filter = require( 'flyd/module/filter' );
+const { dropRepeats } = require( 'flyd/module/droprepeats' );
 const once = require( 'flyd-once' );
 const bufferCount = require( 'flyd-buffercount' );
 const skip = require( 'flyd-skip' );
@@ -51,6 +52,7 @@ module.exports = {
   sChain: f.chain,
   sApply: f.ap,
   sFilter: filter,
+  sDedupe: dropRepeats,
   sOnce: once,
   sSkip: skip,
   sBufferCount: bufferCount,
