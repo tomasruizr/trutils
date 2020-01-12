@@ -66,6 +66,18 @@ function deepFindKey( key, obj ) {
   }
 }
 
+function push( value, list ) {
+  if ( !list ) return l => push( value, l );
+  list.push( value );
+  return list;
+}
+
+function unshift( value, list ) {
+  if ( !list ) return l => unshift( value, l );
+  list.unshift( value );
+  return list;
+}
+
 module.exports = {
   ...R,
   curry,
@@ -77,4 +89,6 @@ module.exports = {
   deepFindKey,
   deepGet,
   deepSet,
+  push,
+  unshift
 };
