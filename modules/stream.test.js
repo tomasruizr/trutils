@@ -16,7 +16,9 @@ const {
   sApply,
   sFromPromise,
   sFlattenPromise,
-  sComposeChain
+  sComposeChain,
+  sSkip,
+  sGetReadOnly
 } = require( './stream.js' );
 
 describe( 'stream.js', function() {
@@ -287,6 +289,34 @@ describe( 'stream.js', function() {
     ], '1' ).map( response=>{
       assert.isTrue( neverCalled.notCalled );
       assert.equal( response.message, 'algun error' );
+      done();
+    });
+  });
+  describe( 'sGetReadOnly', function() {
+    it( 'Does not modify the original stream when set', () => {
+      const a = stream();
+      const aRO = sGetReadOnly( a );
+      a( 10 );
+      assert.equal( aRO(), 10 );
+      aRO( 20 );
+      assert.equal( a(), 10 );
+    });
+    it( 'Does not modify the original stream when set', ( done ) => {
+      const a = stream();
+      const aRO = sGetReadOnly( a );
+      const b = stream();
+      const bRO = sGetReadOnly( b );
+      const combineStub = sinon.stub();
+      combineStub.callsFake(() => {
+        return 50;
+      });
+      sCombine( combineStub, [ aRO, bRO ]);
+      aRO( 1 ); // will not trigger
+      bRO( 2 ); // will not trigger
+      b( 3 );
+      a( 4 );
+      assert.equal( combineStub.args[0][3][0], bRO );
+      assert.equal( combineStub.args[0][3][1], aRO );
       done();
     });
   });

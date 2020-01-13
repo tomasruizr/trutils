@@ -1,6 +1,6 @@
-const f = require( 'flyd' );
-const filter = require( 'flyd/module/filter' );
-const { dropRepeats } = require( 'flyd/module/droprepeats' );
+const f = require( '@tomasruizr/flyd' );
+const filter = require( '@tomasruizr/flyd/module/filter' );
+const { dropRepeats } = require( '@tomasruizr/flyd/module/droprepeats' );
 const once = require( 'flyd-once' );
 const bufferCount = require( 'flyd-buffercount' );
 const skip = require( 'flyd-skip' );
@@ -22,20 +22,12 @@ function sComposeChain( fnsArray, params = {}) {
   return result;  
 }
 
-function sForEach( fn, array ){
-  const result = f.stream();
-  const sArray = f.stream();
-  f.endsOn( result, sArray );
-  const resolveValue = ifElse( prop( 'then' ), 
-    ( promise )=>promise.then( sArray ).catch( result ),
-    sArray
-  );
-  sArray.map(
-    tryCatch( ifElse(() => !!array.length, 
-      ()=>resolveValue( fn( array.pop())),
-      result
-    ),result ));
-  return result; 
+function sGetReadOnly ( originalStream ){
+  const newStream = f.stream();
+  const originalPush = newStream.push;
+  f.on( originalPush, originalStream );
+  newStream.push = function(){ return arguments.length === 0 ? originalStream.val : undefined ; };
+  return newStream;
 }
 
 module.exports = {
@@ -57,4 +49,5 @@ module.exports = {
   sSkip: skip,
   sBufferCount: bufferCount,
   sComposeChain,
+  sGetReadOnly
 };
