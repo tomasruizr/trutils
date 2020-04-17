@@ -5,11 +5,18 @@ module.exports = function ( wallaby ) {
     files: [
       '*/*.js',
       'modules/*.js',
+      'modules/types/*.js',
+      'test/*.js',
+      'index.js',
       { pattern: 'modules/*.test.js', ignore: true },
+      { pattern: 'modules/types/*.test.js', ignore: true },
+      { pattern: 'test/*.test.js', ignore: true },
       { pattern: 'wallaby.conf.js', ignore: true, instrument:false },
     ],
     tests: [
-      'modules/*.test.js'
+      'modules/types/*.test.js',
+      'modules/*.test.js',
+      'test/*.test.js',
     ],
     env: {
       type: 'node'

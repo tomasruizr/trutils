@@ -1,5 +1,5 @@
 const { seq, into, map, filter, reduce } = require( './transducers.js' );
-const { compose } = require( './fp.js' );
+const { compose } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
 describe( 'seq', function() {

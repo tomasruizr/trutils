@@ -1,25 +1,25 @@
-const { map, dedupe } = require( './transducers.js' );
-const { curry, compose } = require( './fp.js' );
+const { curry, compose } = require( '../functions.js' );
 const { assert } = require( 'chai' );
+const t = require( '../transducers.js' );
 const sinon = require( 'sinon' );
 const {
   stream,
-  sMap,
-  sFilter,
-  sReduce,
-  sOn,
-  sOnce,
-  sTransduce,
-  sCombine,
-  sImmediate,
-  sChain,
-  sApply,
-  sFromPromise,
-  sFlattenPromise,
-  sComposeChain,
-  sSkip,
-  sGetReadOnly
-} = require( './stream.js' );
+  map,
+  filter,
+  reduce,
+  on,
+  once,
+  transduce,
+  combine,
+  immediate,
+  chain,
+  ap,
+  fromPromise,
+  flattenPromise,
+  // sComposeChain,
+  // skip,
+  getReadOnly
+} = require( './Stream.js' );
 
 describe( 'stream.js', function() {
   it( 'streams a value getter and setter', () => {
@@ -32,7 +32,7 @@ describe( 'stream.js', function() {
   });
   it( 'maps over a streamed value', () => {
     const s = stream( 1 );
-    const s2 = sMap(( value ) => value * 2, s );
+    const s2 = map(( value ) => value * 2, s );
     assert.equal( s2(), 2 );
     assert.equal( s2(), 2 );
     s( 4 );
@@ -43,7 +43,7 @@ describe( 'stream.js', function() {
   it( 'filters over a streamed value', () => {
     const isEven = num => num % 2 === 0;
     const s = stream();
-    const filtered = sFilter( isEven, s );
+    const filtered = filter( isEven, s );
     s( 1 )( 2 )( 4 )( 3 );
     assert.equal( filtered(), 4 );
     s( 1 )( 6 )( 1 );
@@ -53,14 +53,14 @@ describe( 'stream.js', function() {
   });
   it( 'reduce over a streamed values', () => {
     const s = stream();
-    const reduced = sReduce(( acc, curr ) => acc + curr, 0, s );
+    const reduced = reduce(( acc, curr ) => acc + curr, 0, s );
     s( 1 )( 2 )( 4 )( 3 );
     assert.equal( reduced(), 10 );
   });
   it( 'fires on like an event emmiter', () => {
     const s = stream();
     const onSpy = sinon.spy();
-    sOn( onSpy, s );
+    on( onSpy, s );
     s( 1 )( 2 )( 4 )( 3 );
     assert.equal( onSpy.args[0][0], 1 );
     assert.equal( onSpy.args[1][0], 2 );
@@ -70,21 +70,24 @@ describe( 'stream.js', function() {
   it( 'fires once like an event emmiter', () => {
     const s = stream();
     const onSpy = sinon.spy();
-    sOn( onSpy, sOnce( s ));
+    const onceStream = once( s );
+    on( onSpy, onceStream );
     s( 1 )( 2 )( 4 )( 3 );
-    assert.isTrue( onSpy.calledOnce );
+    onSpy.calledOnce;//?
+    onSpy.callCount;//?
+    assert.isTrue( onSpy.calledOnce );//?
     assert.equal( onSpy.args[0][0], 1 );
   });
   it( 'Can transduce the values of a stream', () => {
     const results = [];
     const s1 = stream();
     const transducer = compose(
-      map( function( x ) { return x * 2; }),
-      dedupe(),
+      t.map( function( x ) { return x * 2; }),
+      t.dedupe(),
     );
-    const s2 = sTransduce( transducer, s1 );
+    const s2 = transduce( transducer, s1 );
     // sCombine( function( s2 ) { results.push( s2()); }, [s2]);
-    sOn( data => results.push( data ), s2 );
+    on( data => results.push( data ), s2 );
     s1( 1 )( 1 )( 2 )( 3 )( 3 )( 3 )( 4 )( 2 );
     assert.deepEqual( results, [ 2,4,6,8,4 ]);
   });
@@ -92,7 +95,7 @@ describe( 'stream.js', function() {
     const x = stream( 4 );
     const y = stream( 6 );
     const changeStream = stream();
-    const sum = sCombine( function( x, y, self, changed ) {
+    const sum = combine( function( x, y, self, changed ) {
       changed.map( s => changeStream({ changed:s === x ? 'x' : 'y', newValue: s(), self: self() }));
       return x() + y();
     }, [ x, y ]);
@@ -107,7 +110,7 @@ describe( 'stream.js', function() {
   it( 'combines two streams', () => {
     const x = stream( 4 );
     const y = stream( 6 );
-    const sum = sCombine( function( x, y ) {
+    const sum = combine( function( x, y ) {
       return x() + y();
     }, [ x, y ]);
     assert.equal( sum(), 10 );
@@ -118,10 +121,10 @@ describe( 'stream.js', function() {
   });
   it( 'supports for immediate calls to dependant streams', () => {
     const s = stream();
-    const hasItems = sCombine( function( s ) {
+    const hasItems = combine( function( s ) {
       return s() !== undefined && s().length > 0;
     }, [s]);
-    const immediateHasItems = sImmediate( sCombine( function( s ) {
+    const immediateHasItems = immediate( combine( function( s ) {
       return s() !== undefined && s().length > 0;
     }, [s]));
     assert.isUndefined( hasItems());
@@ -131,24 +134,24 @@ describe( 'stream.js', function() {
     assert.isTrue( immediateHasItems());
   });
   it( 'Extract a value from promises 1', ( done ) => {
-    const promise = sFromPromise( Promise.resolve( 'someValue' ));
-    sCombine( s => {
+    const promise = fromPromise( Promise.resolve( 'someValue' ));
+    combine( s => {
       assert.equal( s(), 'someValue' );
       done();
     }, [promise]);
   });
   it( 'Extract a value from promises 2', ( done ) => {
     const filter = stream( 'asdf' );
-    const results = filter .pipe( sChain( filter => sFromPromise( Promise.resolve( filter ))));
-    sCombine( s => {
+    const results = filter .pipe( chain( filter => fromPromise( Promise.resolve( filter ))));
+    combine( s => {
       assert.equal( s(), 'asdf' );
       done();
     }, [results]);
   });
   it( 'Extract a value from promises 2', ( done ) => {
     const filter = stream( 'asdf' );
-    const results = filter .pipe( sChain( filter => sFromPromise( Promise.resolve( filter ))));
-    sCombine( s => {
+    const results = filter .pipe( chain( filter => fromPromise( Promise.resolve( filter ))));
+    combine( s => {
       assert.equal( s(), 'asdf' );
       done();
     }, [results]);
@@ -156,8 +159,8 @@ describe( 'stream.js', function() {
   it( 'flattens a promise comming in a stream', ( done ) => {
     const s = stream();
     const result = s.map( num => Promise.resolve( num ))
-      .pipe( sFlattenPromise );
-    sOn(( data ) => {
+      .pipe( flattenPromise );
+    on(( data ) => {
       assert.equal( data, 20 );
       done();
     }, result );
@@ -165,10 +168,10 @@ describe( 'stream.js', function() {
   });
   it( 'Chains the streams', ( done ) => {
     const filter = stream( 'filter' );
-    const search_results = sChain( function( filter ){
+    const search_results = chain( function( filter ){
       return stream( filter );
     }, filter );
-    sOn( value => {
+    on( value => {
       assert.equal( value, 'filter' );
       done();
     }, search_results );
@@ -181,10 +184,10 @@ describe( 'stream.js', function() {
     const sortProperty = stream( 'name' );
     const sortDirection = stream( 'descending' );
     const results = stream( curry( get_results ))
-      .pipe( sApply( filter ))
-      .pipe( sApply( sortProperty ))
-      .pipe( sApply( sortDirection ))
-      .pipe( sMap( function( d ){ return d; }));
+      .pipe( ap( filter ))
+      .pipe( ap( sortProperty ))
+      .pipe( ap( sortDirection ))
+      .pipe( map( function( d ){ return d; }));
     const onChange = sinon.spy();
     results.map( onChange, results );
     filter( 'asdf' );
@@ -205,97 +208,19 @@ describe( 'stream.js', function() {
     s( 1 )( 2 )( 3 );
     assert.equal( mapSpy.callCount, 3 );
   });
-  it( 'Runs a chain of responsability for one function succesfuly', () => {
-    const response = sComposeChain([
-      ()=>'some value',
-    ]);
-    assert.equal( response(), 'some value' );
-  });
-  it( 'Runs a chain of responsability for one function that throws an error', ( done ) => {
-    const neverCalled = sinon.spy();
-    sComposeChain([
-      ()=>{ throw new Error( 'some error' ); },
-    ]).map( data => {
-      assert.isTrue( neverCalled.notCalled );
-      assert.instanceOf( data, Error );
-      assert.equal( data.message, 'some error' );
-      done();
-    });
-  });
-  it( 'Runs a chain of responsability for 5 mixed functions returning promises and native values and returns the accumulated', ( done ) => {
-    sComposeChain([
-      ( current )=>Promise.resolve( `${current},2` ),
-      ( current )=>`${current},3`,
-      ( current )=>Promise.resolve( `${current},4` ),
-      ( current )=>`${current},5`,
-      ( current )=>Promise.resolve( current.split( ',' ))
-    ], '1' ).map( response => {
-      assert.isArray( response );
-      assert.lengthOf( response, 5 );
-      assert.equal( response[0], 1 );
-      assert.equal( response[1], 2 );
-      assert.equal( response[2], 3 );
-      assert.equal( response[3], 4 );
-      assert.equal( response[4], 5 );
-      done();
-    });
-  });
-  it( 'Runs a chain of responsability for 5 mixed functions returning promises and native values, interrupts the execution and returns the accumulated for promise reject', ( done ) => {
-    const neverCalled = sinon.spy();
-    sComposeChain([
-      ( current )=>`${current},2`,
-      ( current )=>Promise.resolve( `${current},3` ),
-      ( current )=>Promise.reject( current ),
-      neverCalled,
-    ], '1' ).map( response => {
-      assert.equal( response, '1,2,3' );
-      assert.isTrue( neverCalled.notCalled );
-      done();
-    });
-  });
-  it( 'Runs a chain of responsability for 5 mixed functions returning promises and native values, interrupts the execution and returns the accumulated for throw', ( done ) => {
-    const neverCalled = sinon.spy();
-    sComposeChain([
-      ( current )=>`${current},2`,
-      ( current )=>Promise.resolve( `${current},3` ),
-      ( current )=>{ throw current; },
-      neverCalled
-    ], '1' ).map( response => {
-      assert.isTrue( neverCalled.notCalled );
-      assert.equal( response, '1,2,3' );
-      done();
-    });
-  });
-  it( 'Runs a chain of responsability for 5 mixed functions returning promises and native values, interrupts the execution and returns the accumulated with throw error', ( done ) => {
-    const neverCalled = sinon.spy();
-    sComposeChain([
-      ( current )=>Promise.resolve( `${current},2` ),
-      ()=>{ throw new Error( 'algun error' ) ; },
-      neverCalled,
-    ], '1' ).map( response => {
-      assert.isTrue( neverCalled.notCalled );
-      assert.instanceOf( response, Error );
-      assert.equal( response.message, 'algun error' );
-      done();
-    });
-  });
-  it( 'Runs a chain of responsability for 5 mixed functions returning promises and native values, interrupts the execution and returns the accumulated with throw error, inside a promise', ( done ) => {
-    const neverCalled = sinon.spy();
-    sComposeChain([
-      ( current )=>Promise.resolve( `${current},2` ),
-      ( current )=>`${current},3`,
-      ()=>Promise.reject( new Error( 'algun error' )),
-      neverCalled
-    ], '1' ).map( response=>{
-      assert.isTrue( neverCalled.notCalled );
-      assert.equal( response.message, 'algun error' );
-      done();
-    });
-  });
-  describe( 'sGetReadOnly', function() {
+  
+  describe( 'getReadOnly', function() {
     it( 'Does not modify the original stream when set', () => {
       const a = stream();
-      const aRO = sGetReadOnly( a );
+      const aRO = getReadOnly( a );
+      a( 10 );
+      assert.equal( aRO(), 10 );
+      aRO( 20 );
+      assert.equal( a(), 10 );
+    });
+    it( 'Does not modify the original stream when set', () => {
+      const a = stream();
+      const aRO = combine( x=>x(), [a]);
       a( 10 );
       assert.equal( aRO(), 10 );
       aRO( 20 );
@@ -303,16 +228,14 @@ describe( 'stream.js', function() {
     });
     it( 'Does not modify the original stream when set', ( done ) => {
       const a = stream();
-      const aRO = sGetReadOnly( a );
+      const aRO = getReadOnly( a );
       const b = stream();
-      const bRO = sGetReadOnly( b );
+      const bRO = getReadOnly( b );
       const combineStub = sinon.stub();
       combineStub.callsFake(() => {
         return 50;
       });
-      sCombine( combineStub, [ aRO, bRO ]);
-      aRO( 1 ); // will not trigger
-      bRO( 2 ); // will not trigger
+      combine( combineStub, [ aRO, bRO ]);
       b( 3 );
       a( 4 );
       assert.equal( combineStub.args[0][3][0], bRO );

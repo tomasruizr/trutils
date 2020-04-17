@@ -4,7 +4,7 @@
   "description": "'library for common util things to use for developing nice javascript apps'",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --reporter=lcov --reporter=text mocha \"modules/*.test.js\""
+    "test": "nyc --reporter=lcov --reporter=text mocha \"modules/{,**/}*.test.js\" \"test/*.test.js\""
   },
   "repository": {
     "type": "git",
@@ -21,15 +21,13 @@
     "eslint": "~6.8.0",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",
-    "sinon": "~8.0.2"
+    "sinon": "~8.0.4"
   },
   "dependencies": {
-    "@tomasruizr/flyd": "~0.2.10",
-    "flyd-buffercount": "~0.1.0",
-    "flyd-filter": "~1.0.2",
-    "flyd-once": "0.0.2",
-    "flyd-skip": "0.0.2",
-    "ramda": "~0.26.1",
+    "@tomasruizr/flyd": "~0.3.1",
+    "data.task": "~3.1.2",
+    "immutable": "~4.0.0-rc.12",
+    "immutable-ext": "~1.1.5",
     "transducers.js": "~0.3.2"
   }
 }
