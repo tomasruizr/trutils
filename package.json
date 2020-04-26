@@ -26,8 +26,10 @@
   "dependencies": {
     "@tomasruizr/flyd": "~0.3.1",
     "data.task": "~3.1.2",
-    "immutable": "~4.0.0-rc.12",
     "immutable-ext": "~1.1.5",
     "transducers.js": "~0.3.2"
+  },
+  "optionalDependencies": {
+    "immutable": "~4.0.0-rc.12"
   }
 }

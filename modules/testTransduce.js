@@ -49,7 +49,7 @@ const FilterReducer = ( predicate, reducer ) => ({
 const ArrayReducer = ()=>({
   '@@transducer/init': ( ...args ) => [...args],
   '@@transducer/result': I,
-  '@@transducer/step': ( array, value ) => { array.push([value]); return array ; },
+  '@@transducer/step': ( array, value ) => { array.push( value ); return array ; },
 });
 
 // const ObjectReducer = ()=>({

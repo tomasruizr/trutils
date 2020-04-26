@@ -1,7 +1,6 @@
-const { curry, isFunction, I, noop, False, True } = require( '../functions.js' );
+const { curry, isFunction, I, False } = require( '../functions.js' );
 const Either = require( './Either.js' );
 const { search } = require( '../arrays.js' );
-const Task = require( './Task.js' );
 
 const Box = x => ({
   chain: f => f( x ),

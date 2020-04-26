@@ -71,7 +71,7 @@ describe( 'run middlewares', function() {
 });
 
 describe( 'cor', function() {
-  it.only( 'Runs a chain of responsability for one function succesfuly', () => {
+  it( 'Runs a chain of responsability for one function succesfuly', () => {
     cor([
       str => Task.of( `${str}$` ),
       str => Task.of( `${str}@` ),
