@@ -1,3 +1,4 @@
+const { curry } = require( '../functions.js' );
 const flyd = require( '@tomasruizr/flyd' );
 const filter = require( '@tomasruizr/flyd/module/filter' );
 const { dropRepeats } = require( '@tomasruizr/flyd/module/droprepeats' );
@@ -14,7 +15,7 @@ const bufferCount = function( bufferSize, bufferEvery, source ) {
     source = bufferEvery;
     bufferEvery = bufferSize;
   }
-  var buffer = [];
+  let buffer = [];
   return flyd.combine( function( source, self ) {
     buffer.push( source());
     if ( buffer.length === bufferSize ) {
@@ -24,7 +25,7 @@ const bufferCount = function( bufferSize, bufferEvery, source ) {
   }, [source]);
 };
 
-const skip = module.exports = flyd.curryN( 2, function ( count, s ) {
+const skip = module.exports = curry( function ( count, s ) {
   return flyd.combine( function( s, self ) {
     if ( count <= 0 ) {
       self( s());

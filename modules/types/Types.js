@@ -1,4 +1,19 @@
 // Semigroups
+const { ensureArray } = require( '../functions.js' );
+
+const Queue = ( init ) => {
+  let values = ( init && ensureArray( init )) || [];
+  return {
+    get length() { return values.length ; },
+    pop() { return !!values.length && values.pop( values ); },
+    push( value ) { values.unshift( value ); return this; },
+    ap: data => values.map( x => x( data )),
+    map: f => Queue( values.map( f )),
+    fold: f => values.map( f ),
+    concat: other=> Queue( other.concat( values )),
+    inspect: () => `Queue(${values})`
+  };
+};
 
 const First = x =>
   ({
@@ -90,9 +105,9 @@ Min.empty = () => Min( Infinity );
 module.exports = {
   Box: require( './Box.js' ),
   Either: require( './Either.js' ),
-  Queue: require( './Queue.js' ),
   Stream: require( './Stream.js' ),
   Task: require( './Task.js' ),
+  Queue,
   First,
   Sum,
   All,

@@ -16,12 +16,12 @@ const {
   ap,
   fromPromise,
   flattenPromise,
-  // sComposeChain,
-  // skip,
+  bufferCount,
+  skip,
   getReadOnly
 } = require( './Stream.js' );
 
-describe( 'stream.js', function() {
+describe( 'Streams', function() {
   it( 'streams a value getter and setter', () => {
     const s = stream( 1 );
     assert.equal( 1, s());
@@ -209,6 +209,66 @@ describe( 'stream.js', function() {
     assert.equal( mapSpy.callCount, 3 );
   });
   
+  describe( 'bufferCount', function() {
+    it( 'streams an array with the buffer size specified', ( done ) => {
+      const s = stream();
+      bufferCount( 3, s )
+        .map( data => {
+          assert.deepEqual( data, [ 1,2,3 ]);
+          done();
+        });
+      s( 1 );
+      s( 2 );
+      s( 3 );
+    });
+    it( 'buffers 4 items every 2 items', ( done ) => {
+      const s = stream();
+      let count = 0;
+      bufferCount( 4, 2, s )
+        .map( data => {
+          count++;
+          if ( count === 1 ){
+            assert.deepEqual( data, [ 1,2,3,4 ]);
+          } else if ( count === 2 ) {
+            assert.deepEqual( data, [ 3,4,5,6 ]);
+          } else {
+            assert.deepEqual( data, [ 5,6,7,8 ]);
+            done();
+          }
+        });
+      s( 1 );
+      s( 2 );
+      s( 3 );
+      s( 4 );
+      s( 5 );
+      s( 6 );
+      s( 7 );
+      s( 8 );
+    });
+  });
+
+  describe( 'skip', function() {
+    it( 'skip the first 3 items in a stream', ( done ) => {
+      const s = stream();
+      let count = 0;
+      skip( 3, s )
+        .map( num => {
+          count++;
+          if ( count === 1 ){
+            assert.equal( num, 4 );
+          } else {
+            assert.equal( num, 5 );
+            done();
+          }
+        });
+      s( 1 );
+      s( 2 );
+      s( 3 );
+      s( 4 );
+      s( 5 );
+    });
+  });
+
   describe( 'getReadOnly', function() {
     it( 'Does not modify the original stream when set', () => {
       const a = stream();

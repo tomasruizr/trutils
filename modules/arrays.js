@@ -1,9 +1,9 @@
-const { fromFalseable } = require( './types/Either.js' );
-
-const range = ( start, end ) => 
-  fromFalseable( end )
-    .map(() => [...Array( end - start ).keys()].map(( val, index ) => start + index ))
-    .fold(() => [...Array( start ).keys()], ( array ) => array );
+const range = ( start, end ) => {
+  if ( end ){
+    return [...Array( end - start ).keys()].map(( val, index ) => start + index );
+  }
+  return [...Array( start ).keys()];
+};
 
 function push( value, list ) {
   if ( !list ) return l => push( value, l );
@@ -17,7 +17,7 @@ function unshift( value, list ) {
   return list;
 }
 
-const search = ( predicate, array ) => {
+const seek = ( predicate, array ) => {
   for ( const item of array ) {
     const result = predicate( item );
     if ( !result ) continue;
@@ -26,7 +26,7 @@ const search = ( predicate, array ) => {
 };
 
 module.exports = {
-  search,
+  seek,
   range,
   push,
   unshift

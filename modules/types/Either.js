@@ -1,6 +1,5 @@
-const Box = require( './Box.js' );
-const Task = require( './Task.js' );
-const { curry, I, isFunction } = require( '../functions.js' );
+const { curry, I, isFunction, False } = require( '../functions.js' );
+const { seek } = require( '../arrays.js' );
 
 const Right = x =>
   ({
@@ -36,13 +35,16 @@ const fromNullable = x =>
 const fromFalseable = ( data ) => 
   [ undefined, null, false, '', 0 ].includes( data ) ? Left( data ) : Right( data ); 
 
-const eitherToTask = e =>
-  e.fold( Task.rejected, Task.ensureTask );
+const fromValidation = curry(( conditionOrFunction, onTrue = I, onFalse = I, subject ) => {
+  const data = isFunction( conditionOrFunction ) ? conditionOrFunction( subject ) : conditionOrFunction;
+  return data ? Right( onTrue( subject )) : Left( onFalse( subject ));
+}, 3 );
 
-const fromValidation = curry(( conditionOrFunction, onTrue = I, onFalse = I, subject ) => 
-  Box( conditionOrFunction )
-    .map( condition => isFunction( condition ) ? condition( subject ) : condition ) 
-    .fold( data => data ? Right( onTrue( subject )) : Left( onFalse( subject ))), 3 );
+const fromOptions = curry(( conditionsOrFunctions, subject ) =>
+  seek( fns => 
+    fromFalseable( fns[0]( subject ))
+      .fold( False, () => Right( fns[1]( subject )))
+  , conditionsOrFunctions ) || Left( null ));
 
 const tryCatch = f => ( ...args ) => {
   try {
@@ -52,14 +54,14 @@ const tryCatch = f => ( ...args ) => {
   }
 };
 
-const isEither = x => x && x.isLeft || x.isRight === true; 
+const isEither = x => ( x && ( x.isLeft || x.isRight )) === true; 
 
 module.exports = { 
   Right,
   Left,
-  eitherToTask,
   fromNullable,
   fromFalseable,
+  fromOptions,
   fromValidation,
   tryCatch,
   isEither,
