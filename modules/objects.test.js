@@ -1,4 +1,4 @@
-const { prop, assoc, propPath, assocPath, merge, mergeClone } = require( './objects.js' );
+const { pick, prop, assoc, propPath, assocPath, merge, mergeClone } = require( './objects.js' );
 const { assert } = require( 'chai' );
 
 describe( 'objects', function() {
@@ -327,5 +327,21 @@ describe( 'objects', function() {
       merge({ count: { prop: true }, foo: 10 }, state );
       assert.deepEqual( state, { count: { prop: true }, foo: 10 });
     });
+  });
+  
+  describe( 'pick', function() {
+    it( 'picks a list of properties from an object', () => {
+      const obj = {
+        name: 'tomas',
+        lastName: 'Ruiz',
+        friends: [ 'mary', 'andy' ],
+        born: 'Venezuela',
+        address: {
+          city:'BA',
+          country: 'Argentina'
+        }
+      };
+      pick([ 'name', 'lastName', [ 'address','country' ]], obj );//?
+    });  
   });
 });

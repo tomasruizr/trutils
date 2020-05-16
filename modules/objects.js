@@ -53,11 +53,18 @@ function assocPath( objectPath, nValue, obj ) {
   return obj;
 }
 
+function pick( props, obj ) {
+  return props.reduce(( acc, path ) =>
+    isArray( path ) ? assocPath( path, propPath( path, obj ), acc ) : assoc( path, prop( path, obj ), acc )
+  , {});
+}
+
 module.exports = {
   merge,
   mergeClone,
   prop,
   propPath,
   assoc,
-  assocPath
+  assocPath,
+  pick
 };
