@@ -35,10 +35,12 @@ const fromNullable = x =>
 const fromFalseable = ( data ) => 
   [ undefined, null, false, '', 0 ].includes( data ) ? Left( data ) : Right( data ); 
 
-const fromValidation = curry(( conditionOrFunction, onTrue = I, onFalse = I, subject ) => {
+const fromValidation = curry(( conditionOrFunction, onFalse = I, onTrue = I, subject ) => {
   const data = isFunction( conditionOrFunction ) ? conditionOrFunction( subject ) : conditionOrFunction;
   return data ? Right( onTrue( subject )) : Left( onFalse( subject ));
 }, 3 );
+
+// TODO: Seria cool un from validation donde se sumarizan todos los posibles errores y devuelve un arreglo de errores.
 
 const fromOptions = curry(( conditionsOrFunctions, subject ) =>
   seek( fns => 
