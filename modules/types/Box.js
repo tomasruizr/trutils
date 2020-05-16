@@ -8,7 +8,7 @@ const Box = x => ({
   inspect: () => `Box(${x})`
 });
 
-Box.fromCondition = curry(( conditionOrFunction, onTrue = I, onFalse = I, subject ) => 
+Box.fromCondition = curry(( conditionOrFunction, onFalse = I, onTrue = I, subject ) => 
   Box( conditionOrFunction )
     .map( condition => isFunction( condition ) ? condition( subject ) : condition ) 
     .map( data => data ? onTrue( subject ) : onFalse( subject )), 3 );
