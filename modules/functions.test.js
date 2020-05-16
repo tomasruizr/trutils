@@ -1,5 +1,5 @@
 const { createWith } = require( './creational.js' );
-const { ap, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError } = require( './functions.js' );
+const { ap, apply, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
 describe( 'Functions', function() {
@@ -148,16 +148,26 @@ describe( 'Functions', function() {
   });
   
   describe( 'ap', function() {
-    it( 'applies value to a list of funciones', () => {
+    it( 'applies list of value to a list of functions', () => {
       const fnList = ap([
+        str => str.toUpperCase(),
+        str => `This: ${str}` 
+      ]);
+      const result = fnList([ 'house', 'dog', 'cat' ]);
+      assert.deepEqual( result, [ 'HOUSE', 'DOG', 'CAT', 'This: house', 'This: dog', 'This: cat' ]);
+    });
+  });
+  describe( 'apply', function() {
+    it( 'applies value to a list of functions', () => {
+      const fnList = apply([
         n => n + 2,
         n => n * 3 
       ]);
       const result = fnList( 4 );
       assert.deepEqual( result, [ 6, 12 ]);
     });
-    it( 'applies multiples value to a list of funciones', () => {
-      const fnList = ap([
+    it( 'applies multiples value to a list of functions', () => {
+      const fnList = apply([
         ( n, m ) => n + m + 2,
         ( n, m ) => n + m * 3,
         ( n ) => n * 3 

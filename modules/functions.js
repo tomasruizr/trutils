@@ -10,9 +10,14 @@ const False = () => false;
 const I = ( x ) => x;
 const noop = () => {};
 
-const ap = ( functions, ...value ) => {
-  if ( !value.length ) return ( ...curriedValue ) => ap( functions, ...curriedValue );
+const apply = ( functions, ...value ) => {
+  if ( !value.length ) return ( ...curriedValue ) => apply( functions, ...curriedValue );
   return functions.map( f => f( ...value ));
+};
+
+const ap = ( functions, otherArray ) => {
+  if ( !otherArray ) return ( curriedArray ) => ap( functions, curriedArray );
+  return functions.flatMap( fn => otherArray.map( fn ));
 };
 
 const curry = ( fn, arity ) =>{
@@ -33,6 +38,7 @@ const pipe = ( ...functions ) =>
 
 module.exports = {
   ap,
+  apply,
   compose,
   curry,
   ensureArray,
