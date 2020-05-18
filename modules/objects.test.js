@@ -1,4 +1,4 @@
-const { pick, prop, assoc, propPath, assocPath, merge, mergeClone } = require( './objects.js' );
+const { clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone } = require( './objects.js' );
 const { assert } = require( 'chai' );
 
 describe( 'objects', function() {
@@ -343,5 +343,35 @@ describe( 'objects', function() {
       };
       pick([ 'name', 'lastName', [ 'address','country' ]], obj );//?
     });  
+  });
+
+  describe( 'clone', function() {
+    it( 'shallow clones an object', () => {
+      const obj = { name:'tomas' };
+      assert.notEqual( obj, clone( obj ));
+      assert.deepEqual( obj, clone( obj ));
+    });
+    it( 'deep clones an object', () => {
+      const obj = { name:'tomas', address:{ city:'Buenos Aires' }, friends:[ 'mary', 'andy' ], birthday: new Date( '10/18/1984' ) };
+      assert.notEqual( obj, clone( obj ));
+      assert.notEqual( obj.address, clone( obj ).address );
+      assert.notEqual( obj.friends, clone( obj ).friends );
+      assert.notEqual( obj.birthday, clone( obj ).birthday );
+      assert.deepEqual( obj, clone( obj ));
+    });
+    it( 'deep clones an array', () => {
+      const arr = [{ name:'tomas', address:{ city:'Buenos Aires' }}, [ 1,2,3,4 ], 'algun string', new Date( '10/18/1984' ) ];
+      assert.notEqual( arr, clone( arr ));
+      assert.notEqual( arr[0].address, clone( arr )[0].address );
+      assert.notEqual( arr[1], clone( arr )[1]);
+      assert.equal( arr[2], clone( arr )[2]);
+      assert.notEqual( arr[3], clone( arr )[3]);
+      assert.deepEqual( arr, clone( arr ));
+    });
+    it( 'clones a time', () => {
+      const date = new Date();
+      assert.notEqual( date, clone( date ));
+      assert.deepEqual( date, clone( date ));
+    });
   });
 });

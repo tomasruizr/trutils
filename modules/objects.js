@@ -1,5 +1,21 @@
 const { isArray, isFunction, isObject } = require( './functions.js' );
 
+const clone = obj => {
+  const out = Array.isArray( obj ) ? Array( obj.length ) : {};
+  if ( obj && obj.getTime ) return new Date( obj.getTime());
+
+  for ( const key in obj ){
+    const value = obj[ key ];
+    out[ key ] =
+      typeof value === 'object' && value !== null ?
+        value.getTime ?
+          new Date( value.getTime()) :
+          clone( value ) :
+        value;
+  }
+  return out;
+};
+
 const _merge = ( isArr, mergeAlgo, patch, data ) =>{
   if ( patch && typeof patch === 'object' ) {
     if ( isArray( patch )) for ( const p of patch ) _merge( isArr, mergeAlgo, p, data );
@@ -60,6 +76,7 @@ function pick( props, obj ) {
 }
 
 module.exports = {
+  clone,
   merge,
   mergeClone,
   prop,
