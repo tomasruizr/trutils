@@ -36,10 +36,10 @@ const compose = ( ...functions ) =>
 const pipe = ( ...functions ) => 
   functions.reduceRight(( accumulator, fn ) => ( ...args ) => accumulator( fn( ...args )), I );
 
-const ifElse = ( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
+const ifElse = curry(( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
   const condition = isFunction( conditionOrFunction ) ? conditionOrFunction( data ) : conditionOrFunction;
   return condition ? onTrue( data ) : onFalse( data );
-};
+}, 3 );
 
 module.exports = {
   ap,
