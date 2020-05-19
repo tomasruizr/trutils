@@ -36,6 +36,11 @@ const compose = ( ...functions ) =>
 const pipe = ( ...functions ) => 
   functions.reduceRight(( accumulator, fn ) => ( ...args ) => accumulator( fn( ...args )), I );
 
+const ifElse = ( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
+  const condition = isFunction( conditionOrFunction ) ? conditionOrFunction( data ) : conditionOrFunction;
+  return condition ? onTrue( data ) : onFalse( data );
+};
+
 module.exports = {
   ap,
   apply,
@@ -44,6 +49,7 @@ module.exports = {
   ensureArray,
   False,
   I,
+  ifElse,
   isArray,
   isError,
   isFunction,

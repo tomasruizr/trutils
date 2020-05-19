@@ -1,5 +1,5 @@
 const { createWith } = require( './creational.js' );
-const { ap, apply, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError } = require( './functions.js' );
+const { ap, apply, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError, ifElse } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
 describe( 'Functions', function() {
@@ -247,6 +247,21 @@ describe( 'Functions', function() {
       assert.deepEqual([{}],ensureArray([{}]));
       assert.deepEqual(['1'],ensureArray(['1']));
       assert.deepEqual(['asdf'],ensureArray(['asdf']));
+    });
+  });
+
+  describe( 'ifElse', function() {
+    it( 'handles conditions', ( done ) => {
+      ifElse(()=>true, () => done(), ()=>{})( true );
+    });
+    it( 'handles conditions', ( done ) => {
+      ifElse(()=>false, () => {}, ()=>done())();
+    });
+    it( 'handles conditions', ( done ) => {
+      ifElse( true, () => done(), ()=>{})( true );
+    });
+    it( 'handles conditions', ( done ) => {
+      ifElse( false, () => {}, ()=>done())();
     });
   });
 });
