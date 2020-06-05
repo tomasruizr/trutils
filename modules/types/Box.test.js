@@ -36,21 +36,21 @@ describe( 'Box', function() {
 
   describe( 'fromCondition', function() {
     it( 'returns the execution result of onFalse when condition function is false', () => {
-      const gt2 = fromCondition( num => num > 2, num => `${num} is gt 2`, num => `${num} is lte 2` );
+      const gt2 = fromCondition( num => num > 2, num => `${num} is lte 2`, num => `${num} is gt 2` );
       assert.deepEqual( gt2( 1 ).fold( I ), '1 is lte 2' );
       assert.deepEqual( gt2( 2 ).fold( I ), '2 is lte 2' );
     });
     it( 'returns the execution result of onTrue when condition function is true', () => {
-      const gt2 = fromCondition( num => num > 2, num => `${num} is gt 2`, num => `${num} is lte 2` );
+      const gt2 = fromCondition( num => num > 2, num => `${num} is lte 2`, num => `${num} is gt 2` );
       assert.deepEqual( gt2( 3 ).fold( I ), '3 is gt 2' );
     });
     it( 'returns the execution result of onFalse when condition value is false', () => {
-      const gt2 = fromCondition( false, num => `${num} is gt 2`, num => `${num} is lte 2` );
+      const gt2 = fromCondition( false, num => `${num} is lte 2`, num => `${num} is gt 2` );
       assert.deepEqual( gt2( 1 ).fold( I ), '1 is lte 2' );
       assert.deepEqual( gt2( 2 ).fold( I ), '2 is lte 2' );
     });
     it( 'returns the execution result of onTrue when condition value is true', () => {
-      const gt2 = fromCondition( true, num => `${num} is gt 2`, num => `${num} is lte 2` );
+      const gt2 = fromCondition( true, num => `${num} is lte 2`, num => `${num} is gt 2` );
       assert.deepEqual( gt2( 3 ).fold( I ), '3 is gt 2' );
     });
   });

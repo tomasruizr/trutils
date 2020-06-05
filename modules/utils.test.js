@@ -1,5 +1,5 @@
 const { I, noop, isError } = require( './functions.js' );
-const { jsonParse, runMiddleWares, cor, eitherToTask } = require( './utils.js' );
+const { jsonParse, runMiddleWares, cor, eitherToTask, fromNullableToTask, fromFalseableToTask } = require( './utils.js' );
 const Task = require( './types/Task.js' );
 const Either = require( './types/Either.js' );
 const { assert } = require( 'chai' );
@@ -98,6 +98,12 @@ describe( 'utils', function() {
   });
 
   describe( 'cor', function() {
+    it( 'Runs a chain of responsability over pure functions when no functions', () => {
+      cor([], 'some' )
+        .fork(() => assert( false ), str => {
+          assert.equal( str, 'some' );
+        });
+    });
     it( 'Runs a chain of responsability over pure functions', () => {
       cor([
         str => `${str}!`,
@@ -206,6 +212,46 @@ describe( 'utils', function() {
       const task = eitherToTask( Either.Left( 'hola' ));
       assert.isTrue( Task.isTask( task ));
       task.fork(( str ) => assert( str, 'hola' ), ()=> assert( false ));
+    });
+  });
+
+  describe( 'fromNullableToTask', function() {
+    it( 'returns rejected task of null', () => {
+      assert.isTrue( Task.isTask( fromNullableToTask( null )));
+      fromNullableToTask( null ).fork(() => assert( true ), () => assert( false ));
+    });
+    it( 'returns rejected task of empty', () => {
+      assert.isTrue( Task.isTask( fromNullableToTask()));
+      fromNullableToTask().fork(() => assert( true ), () => assert( false ));
+    });
+    it( 'returns rejected task of undefined', () => {
+      assert.isTrue( Task.isTask( fromNullableToTask( undefined )));
+      fromNullableToTask( undefined ).fork(() => assert( true ), () => assert( false ));
+    });
+    it( 'returns task of anything', () => {
+      assert.isTrue( Task.isTask( fromNullableToTask( 0 )));
+      fromNullableToTask( 0 ).fork(() => assert( false ), () => assert( true ));
+      assert.isTrue( Task.isTask( fromNullableToTask( 'u' )));
+      fromNullableToTask( 'u' ).fork(() => assert( false ), () => assert( true ));
+      assert.isTrue( Task.isTask( fromNullableToTask( false )));
+      fromNullableToTask( false ).fork(() => assert( false ), () => assert( true ));
+      assert.isTrue( Task.isTask( fromNullableToTask({})));
+      fromNullableToTask({}).fork(() => assert( false ), () => assert( true ));
+      assert.isTrue( Task.isTask( fromNullableToTask([])));
+      fromNullableToTask([]).fork(() => assert( false ), () => assert( true ));
+      assert.isTrue( Task.isTask( fromNullableToTask( function(){})));
+      fromNullableToTask( function(){}).fork(() => assert( false ), () => assert( true ));
+    });
+  });
+
+  describe( 'fromFalseableToTask', function() {
+    it( 'returns rejected task of condition', () => {
+      assert.isTrue( Task.isTask( fromFalseableToTask( array=>array.length )([])));
+      fromFalseableToTask( array=>array.length )([]).fork(() => assert( true ), () => assert( false ));
+    });
+    it( 'returns task of anything', () => {
+      assert.isTrue( Task.isTask( fromFalseableToTask( array=>array.length )(['hola'])));
+      fromFalseableToTask( array=>array.length )(['hola']).fork(() => assert( false ), () => assert( true ));
     });
   });
 });

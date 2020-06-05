@@ -1,5 +1,5 @@
 const { I, True } = require( '../functions.js' );
-const { Left, Right, fromNullable, fromFalseable, fromValidation, fromOptions, isEither } = require( './Either.js' );
+const { Left, Right, fromNullable, fromFalseable, fromValidation, fromOptions, isEither, all, any } = require( './Either.js' );
 const Box = require( './Box.js' );
 const { assert } = require( 'chai' );
 const identity = x => x;
@@ -180,6 +180,36 @@ describe( 'Either', function() {
         [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
       ]);
       x( 'bla' ).fold( assert.isNull );
+    });
+  });
+
+  describe( 'All', function() {
+    it( 'returns true if all are true', () => {
+      assert.isTrue( all([true], 1 ));
+      assert.isTrue( all([ true, true ], 1 ));
+      assert.isTrue( all([ true, true, true ], 1 ));
+      assert.isTrue( all([ true, ( data )=> data, true ], 1 ));
+    });
+    it( 'returns false if any is false', () => {
+      assert.isFalse( all([ true, true, false ], 1 ));
+      assert.isFalse( all([ true, false, true ], 1 ));
+      assert.isFalse( all([ false, true, true ], 1 ));
+      assert.isFalse( all([ true, data => data === 0, true ], 1 ));
+    });
+  });
+  
+  describe( 'Any', function() {
+    it( 'returns true if any is true', () => {
+      assert.isTrue( any([ true, true, false ], 1 ));
+      assert.isTrue( any([ false, false, true ], 1 ));
+      assert.isTrue( any([ false, true, true ], 1 ));
+      assert.isTrue( any([ false, data => data === 0, true ], 1 ));
+    });
+    it( 'returns false if any is false', () => {
+      assert.isFalse( any([false], 1 ));
+      assert.isFalse( any([ false, false ], 1 ));
+      assert.isFalse( any([ false, false, false ], 1 ));
+      assert.isFalse( any([ false, ( data )=> !data, false ], 1 ));
     });
   });
 });

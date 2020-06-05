@@ -1,4 +1,4 @@
-const { isArray, isFunction, isObject } = require( './functions.js' );
+const { isArray, isFunction, isObject, curry } = require( './functions.js' );
 
 const clone = obj => {
   const out = Array.isArray( obj ) ? Array( obj.length ) : {};
@@ -50,14 +50,14 @@ function prop( objectPath, obj ) {
 
 function propPath( objectPath, obj ) {
   if ( !obj ) return obj => propPath( objectPath, obj );
-  return objectPath.reduce(( currentObject, part ) => currentObject[part], obj );
+  return objectPath.reduce(( currentObject, part ) => currentObject && currentObject[part], obj );
 }
 
-function assoc( objectPath, nValue, obj ) {
-  if ( !obj ) return obj => assoc( objectPath, nValue, obj );
+const assoc = curry(( objectPath, nValue, obj ) => {
   obj[objectPath] = nValue;
   return obj;
-}
+});
+
 function assocPath( objectPath, nValue, obj ) {
   if ( !obj ) return obj => assocPath( objectPath, nValue, obj );
   const lastPath = objectPath.pop();
@@ -69,11 +69,21 @@ function assocPath( objectPath, nValue, obj ) {
   return obj;
 }
 
-function pick( props, obj ) {
-  return props.reduce(( acc, path ) =>
-    isArray( path ) ? assocPath( path, propPath( path, obj ), acc ) : assoc( path, prop( path, obj ), acc )
-  , {});
+function fromPairs( pairs ){
+  const result = {};
+  pairs.forEach(([ prop, value ]) => result[ prop ] = value );
+  return result;
 }
+  
+const pick = ( props, obj ) => !obj ? ( obj ) => pick( props, obj ) :
+  props.reduce(( acc, path ) =>
+    isArray( path ) ? assocPath( path, propPath( path, obj ), acc ) : assoc( path, prop( path, obj ), acc )
+  , Array.isArray( obj ) ? [] : {});
+
+const omit = ( props, obj ) => !obj ? ( obj ) => omit( props, obj ) :  
+  Object.keys( obj ).reduce(( acc, property ) =>
+    props.includes( property ) ? acc : assoc( property, prop( property, obj ), acc )
+  , Array.isArray( obj ) ? [] : {});
 
 module.exports = {
   clone,
@@ -83,5 +93,7 @@ module.exports = {
   propPath,
   assoc,
   assocPath,
-  pick
+  pick,
+  omit,
+  fromPairs
 };

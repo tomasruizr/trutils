@@ -4,7 +4,7 @@ const isObject = ( theObject ) => theObject instanceof Object && Object.getProto
 const isNumber = ( theNumber ) => typeof theNumber === 'number'; 
 const isString = ( theString ) => typeof theString === 'string'; 
 const isError = ( error ) => error instanceof Error; 
-const ensureArray = ( theArray ) => isArray( theArray ) ? theArray : [theArray]; 
+const ensureArray = ( theArray ) => isArray( theArray ) ? theArray : ( theArray != null ? [theArray] : []); 
 const True = () => true;
 const False = () => false;
 const I = ( x ) => x;
@@ -41,6 +41,13 @@ const ifElse = curry(( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
   return condition ? onTrue( data ) : onFalse( data );
 }, 3 );
 
+const map = ( fn, collection ) => {
+  if ( Array.isArray( collection )) return collection.map( fn );
+  const copy = { ...collection };
+  Object.keys( copy ).forEach( key => copy[key] = fn( copy[key], key ));
+  return copy;
+};
+
 module.exports = {
   ap,
   apply,
@@ -56,6 +63,7 @@ module.exports = {
   isNumber,
   isObject,
   isString,
+  map,
   noop,
   pipe,
   True,

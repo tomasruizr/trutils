@@ -15,6 +15,12 @@ const Queue = ( init ) => {
   };
 };
 
+const Intersection = values => ({
+  values,
+  concat: ({ values: otherValues }) =>
+    Intersection( values.filter( x => otherValues.some( y => x === y )))
+});
+
 const First = x =>
   ({
     x,
@@ -47,7 +53,8 @@ const All = x =>
     inspect: () =>
       `All(${x})`,
     toString: () =>
-      `All(${x})`
+      `All(${x})`,
+    fold: ( fn ) => fn ? fn( x ) : x 
   });
 
 const Product = x =>
@@ -86,6 +93,7 @@ const Pair = ( x, y ) =>
     y,
     bimap: ( f, g ) => Pair( f( x ), g( y )),
     toList: () => [ x, y ],
+    toObject: () => ({ [x]: y }),
     concat: ({ x: x1, y: y1 }) =>
       Pair( x.concat( x1 ), y.concat( y1 )),
     fold: ( f ) => f( x, y ),
@@ -96,7 +104,7 @@ const Pair = ( x, y ) =>
 
 // Monoids
 Sum.empty = () => Sum( 0 );
-All.empty = () => Sum( true );
+All.empty = () => All( true );
 Product.empty = () => Product( 1 );
 Any.empty = () => Any( false );
 Max.empty = () => Max( -Infinity );
@@ -113,6 +121,7 @@ module.exports = {
   All,
   Pair,
   Product, 
+  Intersection,
   Any,
   Max,
   Min

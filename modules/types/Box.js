@@ -1,11 +1,14 @@
 const { curry, isFunction, I } = require( '../functions.js' );
 
-const Box = x => ({
-  chain: f => f( x ),
-  ap: other => other.map( x ),
-  map: f => Box( f( x )),
-  fold: f => f( x ),
-  inspect: () => `Box(${x})`
+const Box = value => ({
+  value,
+  chain: f => f( value ),
+  ap: other => other.map( value ),
+  map: f => Box( f( value )),
+  concat: ({ value: otherValue }) =>
+    Box( value.concat( otherValue )),
+  fold: f => f( value ),
+  inspect: () => `Box(${value})`
 });
 
 Box.fromCondition = curry(( conditionOrFunction, onFalse = I, onTrue = I, subject ) => 

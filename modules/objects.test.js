@@ -1,8 +1,8 @@
-const { clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone } = require( './objects.js' );
+const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone, fromPairs } = require( './objects.js' );
 const { assert } = require( 'chai' );
 
 describe( 'objects', function() {
-  describe( 'propPath', function() {
+  describe( 'prop', function() {
     const obj = {
       a: 23,
       bla:{
@@ -78,6 +78,11 @@ describe( 'objects', function() {
       assert.isFunction( res );
       const result = res( obj );
       assert.equal( result, 'nombre' );
+    });
+    it( 'returns undefined if any part of the path does not exist', () => {
+      const result = propPath([ 'a', 'does not exists', 'this one either' ]);
+      assert.isFunction( result );
+      assert.isUndefined( result( obj ));
     });
   });
   describe( 'assocPath', function() {
@@ -341,7 +346,57 @@ describe( 'objects', function() {
           country: 'Argentina'
         }
       };
-      pick([ 'name', 'lastName', [ 'address','country' ]], obj );//?
+      assert.deepEqual( pick([ 'name', 'lastName', [ 'address','country' ]], obj ), { 
+        address: { 
+          country: 'Argentina' 
+        },
+        lastName: 'Ruiz',
+        name: 'tomas' });//?
+    });  
+    
+    it( 'Works with array', () => {
+      const arr = [ 1,2,3,4 ];
+      assert.deepEqual( pick([ 0,1 ], arr ), [ 1,2 ]);  
+    });
+  });
+
+  describe( 'omit', function() {
+    it( 'omits a list of properties from an object', () => {
+      const obj = {
+        name: 'tomas',
+        lastName: 'Ruiz',
+        friends: [ 'mary', 'andy' ],
+        born: 'Venezuela',
+        address: {
+          city:'BA',
+          country: 'Argentina'
+        }
+      };
+      assert.deepEqual( omit([ 'born', 'friends', 'lastName' ], obj ), { 
+        address: { 
+          city:'BA',
+          country: 'Argentina' 
+        },
+        name: 'tomas' });//?
+    });  
+    it( 'omits a list of properties from an object [curried]', () => {
+      const obj = {
+        name: 'tomas',
+        lastName: 'Ruiz',
+        friends: [ 'mary', 'andy' ],
+        born: 'Venezuela',
+        address: {
+          city:'BA',
+          country: 'Argentina'
+        }
+      };
+      const o = omit([ 'born', 'friends', 'lastName' ]);
+      assert.deepEqual( o( obj ), { 
+        address: { 
+          city:'BA',
+          country: 'Argentina' 
+        },
+        name: 'tomas' });//?
     });  
   });
 
@@ -372,6 +427,13 @@ describe( 'objects', function() {
       const date = new Date();
       assert.notEqual( date, clone( date ));
       assert.deepEqual( date, clone( date ));
+    });
+  });
+  describe( 'fromPairs', function() {
+    it( 'converts an arrays of pairs into an object', () => {
+      assert.deepEqual( fromPairs([]), {});
+      assert.deepEqual( fromPairs([[ 'name', 'tomas' ]]), { name:'tomas' });
+      assert.deepEqual( fromPairs([[ 'name', 'tomas' ], [ 'lastName', 'ruiz' ]]), { name:'tomas', lastName:'ruiz' });
     });
   });
 });

@@ -19,9 +19,15 @@ const cor = curry(( fns, params ) =>
 
 const eitherToTask = e => e.fold( Task.rejected, Task.ensureTask );
 
+const fromNullableToTask = value => Either.fromNullable( value ).fold( Task.rejected, Task.ensureTask );
+
+const fromFalseableToTask = condition => value => Either.fromFalseable( condition( value )).fold(() => Task.rejected( value ), () => Task.ensureTask( value ));
+
 module.exports = {
   jsonParse,
   eitherToTask,
   runMiddleWares,
+  fromNullableToTask,
+  fromFalseableToTask,
   cor
 };

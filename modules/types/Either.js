@@ -1,4 +1,4 @@
-const { curry, I, isFunction, False } = require( '../functions.js' );
+const { curry, I, isFunction, False, True } = require( '../functions.js' );
 const { seek } = require( '../arrays.js' );
 
 const Right = x =>
@@ -8,6 +8,7 @@ const Right = x =>
     ap: other => other.map( x ),
     traverse: ( of, f ) => f( x ).map( Right ),
     map: f => Right( f( x )),
+    leftMap: () => Right( x ),
     fold: ( f, g ) => g( x ),
     concat: o =>
       o.fold(() => Right( x ),
@@ -22,6 +23,7 @@ const Left = x =>
     ap: () => Left( x ),
     traverse: ( of ) => of( Left( x )),
     map: () => Left( x ),
+    leftMap: ( f ) => Left( f( x )),
     fold: ( f ) => f( x ),
     concat: o =>
       o.fold(() => Left( x ),
@@ -58,6 +60,15 @@ const tryCatch = f => ( ...args ) => {
 
 const isEither = x => ( x && ( x.isLeft || x.isRight )) === true; 
 
+const any = ( conditionsOrFunctions, subject ) => !subject ? subject => any( conditionsOrFunctions, subject ) :
+  conditionsOrFunctions
+    .reduce(( acc, current )=> acc || ( isFunction( current ) ? !!current( subject ) : !!current ), false );
+
+const all = ( conditionsOrFunctions, subject ) => !subject ? subject => all( conditionsOrFunctions, subject ) :
+  fromFalseable( seek( current => ( isFunction( current ) ? !current( subject ) : !current ), conditionsOrFunctions ))
+    .fold( True, False );
+
+
 module.exports = { 
   Right,
   Left,
@@ -67,5 +78,7 @@ module.exports = {
   fromValidation,
   tryCatch,
   isEither,
-  of: Right 
+  of: Right,
+  all,
+  any
 };

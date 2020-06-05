@@ -1,5 +1,5 @@
 const { createWith } = require( './creational.js' );
-const { ap, apply, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError, ifElse } = require( './functions.js' );
+const { ap, apply, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError, ifElse, map } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
 describe( 'Functions', function() {
@@ -231,10 +231,12 @@ describe( 'Functions', function() {
   
   describe( 'ensureArray', function() {
     it( 'returns an array with the value passed as param if is not array', () => {
+      assert.deepEqual([],ensureArray());
       assert.deepEqual([3],ensureArray( 3 ));
       assert.deepEqual([10n],ensureArray( 10n ));
-      assert.deepEqual([undefined],ensureArray( undefined ));
-      assert.deepEqual([null],ensureArray( null ));
+      assert.deepEqual([],ensureArray( undefined ));
+      assert.deepEqual([],ensureArray( null ));
+      assert.deepEqual([false],ensureArray( false ));
       assert.deepEqual([{}],ensureArray({}));
       assert.deepEqual(['1'],ensureArray( '1' ));
       assert.deepEqual(['asdf'],ensureArray( 'asdf' ));
@@ -255,13 +257,26 @@ describe( 'Functions', function() {
       ifElse(()=>true, () => done(), ()=>{})( true );
     });
     it( 'handles conditions', ( done ) => {
-      ifElse(()=>false, () => {}, ()=>done())();
+      ifElse(()=>false, () => {}, ()=>done())( null );
     });
     it( 'handles conditions', ( done ) => {
       ifElse( true, () => done(), ()=>{})( true );
     });
     it( 'handles conditions', ( done ) => {
-      ifElse( false, () => {}, ()=>done())();
+      ifElse( false, () => {}, ()=>done())( null );
+    });
+  });
+
+  describe( 'map', function() {
+    it( 'Works on objects', () => {
+      const values = [];
+      const keys = [];
+      map(( value, key ) => { values.push( value ); keys.push( key ) ; }, { name:'tomas', color: 'blue' });
+      assert.deepEqual( values, [ 'tomas', 'blue' ]);
+      assert.deepEqual( keys, [ 'name', 'color' ]);
+    });
+    it( 'works on arrays', () => {
+      assert.deepEqual( map( x => x * 2, [ 2,4 ]), [ 4,8 ]);
     });
   });
 });

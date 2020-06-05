@@ -1,3 +1,5 @@
+const objects = require( './objects.js' );
+
 const range = ( start, end ) => {
   if ( end ){
     return [...Array( end - start ).keys()].map(( val, index ) => start + index );
@@ -8,6 +10,12 @@ const range = ( start, end ) => {
 function push( value, list ) {
   if ( !list ) return l => push( value, l );
   list.push( value );
+  return list;
+}
+
+function deepPush( value, path, list ) {
+  if ( !list ) return list => deepPush( value, path, list );
+  objects.propPath( path, list ).push( value );
   return list;
 }
     
@@ -25,9 +33,14 @@ const seek = ( predicate, array ) => {
   }
 };
 
+const foldMap = ( fn, empty, list ) => 
+  list.reduce(( acc, x, i ) => acc.concat( fn( x, i )), empty );
+
 module.exports = {
   seek,
   range,
   push,
+  deepPush,
+  foldMap,
   unshift
 };

@@ -14,16 +14,12 @@ describe( 'Task', function() {
     });
   });
   
-  // describe( 'fromOptions', function() {
-  //   it.skip( 'returns a left in case condition is not true', () => {
-  //     const x = Task.fromOptions([
-  //       [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
-  //       [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
-  //       [ True, str=> `solo es, ${str}` ],
-  //     ]);
-  //     x( 'algo' ).fork(( str ) => assert.equal( 'la cadena tiene algo, algo', str ));//?
-  //     x( 'nada' ).fork(( str ) => assert.equal( 'la cadena tiene nada, nada', str ));//?
-  //     x( 'a' ).fold(( str ) => assert.equal( 'solo es, a', str ));//?
-  //   });
-  // });
+  describe( 'ap', function() {
+    it( 'rejects if one of the ap functions rejects', () => {
+      Task.of( one=>two => `${one}-${two}` )
+        .ap( Task.of( 'hola' ))
+        .ap( Task.rejected( 'pana' ))
+        .fork( err => assert.equal( err, 'pana' ), () => assert( false ));
+    });
+  });
 });
