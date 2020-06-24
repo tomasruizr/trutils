@@ -1,4 +1,4 @@
-const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone, fromPairs } = require( './objects.js' );
+const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone, fromPairs, deepPush } = require( './objects.js' );
 const { assert } = require( 'chai' );
 
 describe( 'objects', function() {
@@ -358,6 +358,10 @@ describe( 'objects', function() {
       const arr = [ 1,2,3,4 ];
       assert.deepEqual( pick([ 0,1 ], arr ), [ 1,2 ]);  
     });
+    it( 'picks only data not null or undefined', () => {
+      const obj = { a:1, b:undefined, c:null };
+      assert.deepEqual( pick([ 'a','b','c' ], obj ), { a:1 });  
+    });
   });
 
   describe( 'omit', function() {
@@ -434,6 +438,18 @@ describe( 'objects', function() {
       assert.deepEqual( fromPairs([]), {});
       assert.deepEqual( fromPairs([[ 'name', 'tomas' ]]), { name:'tomas' });
       assert.deepEqual( fromPairs([[ 'name', 'tomas' ], [ 'lastName', 'ruiz' ]]), { name:'tomas', lastName:'ruiz' });
+    });
+  });
+  describe( 'deepPush', function() {
+    it( 'pushes the value into a deep array and return the array', () => 
+      assert.deepEqual( deepPush( 5, ['2'] ,[ 1,2, [ 3,4 ]]) , [ 1,2 ,[ 3,4,5 ]]));
+    it( 'pushes the value into a deep array and return the array', () => 
+      assert.deepEqual( deepPush( 'some name', [ 2, 'data','numbers' ] ,[ 1,2, { data:{ numbers:[]}}]) , [ 1, 2, { data: { numbers: ['some name']}}]));
+    it( 'pushes the value into a deep array and return the array', () => 
+      assert.deepEqual( deepPush( 'some role', ['roles'] , { roles:['bla']}) , { roles: [ 'bla', 'some role' ]}));
+    it( 'Curried pushes the value into an array and return the array', () => {
+      const fn = deepPush( 5, ['2']);
+      assert.deepEqual( fn([ 1,2, [ 3,4 ]]) , [ 1,2 ,[ 3,4,5 ]]);
     });
   });
 });

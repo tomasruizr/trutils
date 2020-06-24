@@ -271,7 +271,8 @@ describe( 'Functions', function() {
     it( 'Works on objects', () => {
       const values = [];
       const keys = [];
-      map(( value, key ) => { values.push( value ); keys.push( key ) ; }, { name:'tomas', color: 'blue' });
+      const curry = map(( value, key ) => { values.push( value ); keys.push( key ) ; });
+      curry({ name:'tomas', color: 'blue' });
       assert.deepEqual( values, [ 'tomas', 'blue' ]);
       assert.deepEqual( keys, [ 'name', 'color' ]);
     });

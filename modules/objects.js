@@ -1,4 +1,5 @@
 const { isArray, isFunction, isObject, curry } = require( './functions.js' );
+const Either = require( './types/Either.js' );
 
 const clone = obj => {
   const out = Array.isArray( obj ) ? Array( obj.length ) : {};
@@ -74,10 +75,20 @@ function fromPairs( pairs ){
   pairs.forEach(([ prop, value ]) => result[ prop ] = value );
   return result;
 }
-  
+
+const has = ( prop, obj ) => !obj ? ( obj ) => has( prop, obj ) : Object.prototype.hasOwnProperty.call( obj, prop ); 
+
+const hasPath = ( path, obj ) => !obj ? 
+  ( obj ) => hasPath( path, obj ) : 
+  Object.prototype.hasOwnProperty.call( propPath( propPath( path.slice( 0, path.length - 1 ), obj ), prop )); 
+
 const pick = ( props, obj ) => !obj ? ( obj ) => pick( props, obj ) :
   props.reduce(( acc, path ) =>
-    isArray( path ) ? assocPath( path, propPath( path, obj ), acc ) : assoc( path, prop( path, obj ), acc )
+    isArray( path ) ? 
+      Either.fromNullable( propPath( path, obj ))
+        .fold(() => acc, ( val ) => assocPath( path, val, acc )) :
+      Either.fromNullable( prop( path, obj ))
+        .fold(() => acc, ( val ) => assoc( path, val, acc ))
   , Array.isArray( obj ) ? [] : {});
 
 const omit = ( props, obj ) => !obj ? ( obj ) => omit( props, obj ) :  
@@ -85,15 +96,24 @@ const omit = ( props, obj ) => !obj ? ( obj ) => omit( props, obj ) :
     props.includes( property ) ? acc : assoc( property, prop( property, obj ), acc )
   , Array.isArray( obj ) ? [] : {});
 
+function deepPush( value, path, list ) {
+  if ( !list ) return list => deepPush( value, path, list );
+  propPath( path, list ).push( value );
+  return list;
+}
+
 module.exports = {
   clone,
   merge,
   mergeClone,
   prop,
   propPath,
+  deepPush,
   assoc,
   assocPath,
   pick,
+  has,
+  hasPath,
   omit,
   fromPairs
 };
