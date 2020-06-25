@@ -1,6 +1,6 @@
 {
   "name": "@tomasruizr/trutils",
-  "version": "5.0.7",
+  "version": "5.0.8",
   "description": "'library for common util things to use for developing nice javascript apps'",
   "main": "index.js",
   "scripts": {
