@@ -96,11 +96,10 @@ const omit = ( props, obj ) => !obj ? ( obj ) => omit( props, obj ) :
     props.includes( property ) ? acc : assoc( property, prop( property, obj ), acc )
   , Array.isArray( obj ) ? [] : {});
 
-function deepPush( value, path, list ) {
-  if ( !list ) return list => deepPush( value, path, list );
+const appendDeep = curry(( path, value, list ) => {
   propPath( path, list ).push( value );
   return list;
-}
+});
 
 module.exports = {
   clone,
@@ -108,7 +107,7 @@ module.exports = {
   mergeClone,
   prop,
   propPath,
-  deepPush,
+  appendDeep,
   assoc,
   assocPath,
   pick,

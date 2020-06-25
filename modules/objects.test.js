@@ -1,4 +1,4 @@
-const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone, fromPairs, deepPush } = require( './objects.js' );
+const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone, fromPairs, appendDeep } = require( './objects.js' );
 const { assert } = require( 'chai' );
 
 describe( 'objects', function() {
@@ -440,15 +440,15 @@ describe( 'objects', function() {
       assert.deepEqual( fromPairs([[ 'name', 'tomas' ], [ 'lastName', 'ruiz' ]]), { name:'tomas', lastName:'ruiz' });
     });
   });
-  describe( 'deepPush', function() {
+  describe( 'appendDeep', function() {
     it( 'pushes the value into a deep array and return the array', () => 
-      assert.deepEqual( deepPush( 5, ['2'] ,[ 1,2, [ 3,4 ]]) , [ 1,2 ,[ 3,4,5 ]]));
+      assert.deepEqual( appendDeep(['2'], 5, [ 1,2, [ 3,4 ]]) , [ 1,2 ,[ 3,4,5 ]]));
     it( 'pushes the value into a deep array and return the array', () => 
-      assert.deepEqual( deepPush( 'some name', [ 2, 'data','numbers' ] ,[ 1,2, { data:{ numbers:[]}}]) , [ 1, 2, { data: { numbers: ['some name']}}]));
+      assert.deepEqual( appendDeep([ 2, 'data','numbers' ], 'some name', [ 1,2, { data:{ numbers:[]}}]) , [ 1, 2, { data: { numbers: ['some name']}}]));
     it( 'pushes the value into a deep array and return the array', () => 
-      assert.deepEqual( deepPush( 'some role', ['roles'] , { roles:['bla']}) , { roles: [ 'bla', 'some role' ]}));
+      assert.deepEqual( appendDeep(['roles'], 'some role', { roles:['bla']}) , { roles: [ 'bla', 'some role' ]}));
     it( 'Curried pushes the value into an array and return the array', () => {
-      const fn = deepPush( 5, ['2']);
+      const fn = appendDeep(['2'], 5 );
       assert.deepEqual( fn([ 1,2, [ 3,4 ]]) , [ 1,2 ,[ 3,4,5 ]]);
     });
   });
