@@ -1,7 +1,6 @@
 const { isError, curry, I } = require( './functions.js' );
 const Task = require( './types/Task.js' );
 const Either = require( './types/Either.js' );
-Either;
 const jsonParse = Either.tryCatch( JSON.parse );
 
 const runMiddleWares = ( middlewares, ...subject ) => middlewares.reduce(( subjectTask, mw ) =>

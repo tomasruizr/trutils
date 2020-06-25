@@ -1,5 +1,5 @@
-const { assoc } = require( './objects.js' );
-const { I, isObject, isArray, isError } = require( './functions.js' );
+// const { assoc } = require( './objects.js' );
+const { I, isObject } = require( './functions.js' );
 
 //*******************************************
 // utils
@@ -59,31 +59,11 @@ const ArrayReducer = ()=>({
 //     isArray( value ) && value.length === 2 ? assoc( ...value, object ) : Object.keys( value ).forEach( k=> assoc( k, value[k], object )),
 // });
 
-const CorReducer = () => ({
-  '@@transducer/init': I,
-  '@@transducer/result': I,
-  '@@transducer/step': ( accumulate, fn ) => {
-    try{
-      return fn( accumulate );
-    } catch ( res ) {
-      if ( isError( res )) throw res;
-      return Reduced( res );
-    }
-  }
-});
-
-const ChainReducer = () => ({
-  '@@transducer/init': I,
-  '@@transducer/result': I,
-  '@@transducer/step': ( accumulate, value ) => value
-});
-
 //*******************************************
 // transformers
 //*******************************************
 const map = fn => reducer => MapReducer( fn, reducer );
 const filter = predicate => reducer => FilterReducer( predicate, reducer );
-const cor = identity => reducer => CorReducer( identity, reducer );
 
 // Functions
 const transduce = ( xf , reducer, initialValue, collection ) => {
@@ -104,19 +84,7 @@ const transduce = ( xf , reducer, initialValue, collection ) => {
   return transformedReducer['@@transducer/result']( accumulation );
 };
 
-// transduce( map( x=>x * 2 ), ArrayReducer(), [], [ 1,2,3,4 ]); //?
-transduce( cor( I ), ChainReducer(), 'nad', [
-  ( x ) => `${x}#`, 
-  ( x ) => `${x}$`, 
-  ( x ) => { if ( /algo/.test( x )) throw x; return x ; }, 
-  ( x ) => `${x}!`, 
-  ( x ) => { if ( /nada/.test( x )) throw new Error( 'nada esta permitido' ); return x ; }, 
-  ( x ) => `${x}!`, 
-  ( x ) => `${x}!`, 
-]); //?
-
 // TODO: Traer seq, into
-// TODO: Hacer el tema de COR
 // TODO: Probar un transduce con stream
 // TODO: Hacer un Benchmark contra transducers.js
 // TODO: Asegurar que funciona contra immutable y que no se creen listas nuevas

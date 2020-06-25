@@ -1,5 +1,23 @@
 const { createWith } = require( './creational.js' );
-const { ap, apply, curry, compose, pipe, isObject, isNumber, isString, ensureArray, True, False, I, isError, ifElse, map } = require( './functions.js' );
+const Task = require( './types/Task.js' );
+const { 
+  ap,
+  apply,
+  curry,
+  compose,
+  pipe,
+  isObject,
+  isNumber,
+  isString,
+  ensureArray,
+  True,
+  False,
+  I,
+  isError,
+  ifElse,
+  map,
+  traverse
+} = require( './functions.js' );
 const { assert } = require( 'chai' );
 
 describe( 'Functions', function() {
@@ -278,6 +296,21 @@ describe( 'Functions', function() {
     });
     it( 'works on arrays', () => {
       assert.deepEqual( map( x => x * 2, [ 2,4 ]), [ 4,8 ]);
+    });
+  });
+
+  describe( 'traverse', function() {
+    it( 'traverses one array of X(concatenable) into a X of an array', ( done ) => {
+      const someTask = ( x ) => new Task(( reject, resolve ) => {
+        setTimeout(() => {
+          resolve( x * 2 );
+        }, 10 );
+      });
+      traverse( Task.of, someTask, [ 1,2,3,4 ])//;//?
+        .fork(( err ) => assert( false, err.stack ), ( result ) => {
+          result;//?
+          done();
+        });
     });
   });
 });

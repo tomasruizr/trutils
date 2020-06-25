@@ -49,12 +49,19 @@ const map = ( fn, collection ) => {
   return copy;
 };
 
+
+const traverse = function( point, f, array ) {
+  return array.reduce(( acc, item ) =>
+    acc.map( x => y => x.concat([y])).ap( f( item )), point([]));
+};
+
 module.exports = {
   ap,
   apply,
   compose,
   curry,
   ensureArray,
+  traverse,
   False,
   I,
   ifElse,
