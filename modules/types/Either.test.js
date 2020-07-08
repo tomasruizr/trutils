@@ -1,5 +1,5 @@
 const { I, True } = require( '../functions.js' );
-const { Left, Right, fromNullable, fromFalseable, fromValidation, fromOptions, isEither, all, any } = require( './Either.js' );
+const { Left, Right, fromNullable, fromFalseable, fromValidation, fromValidations, fromOptions, isEither, all, any } = require( './Either.js' );
 const Box = require( './Box.js' );
 const { assert } = require( 'chai' );
 const identity = x => x;
@@ -160,6 +160,26 @@ describe( 'Either', function() {
       assert.deepEqual( fromValidation(() => 1 > 2 )( null ).fold( I ), Left( null ).fold( I ));
       assert.deepEqual( fromValidation( 0 )( null ).fold( I ), Left( null ).fold( I ));
       assert.deepEqual( fromValidation(() => '' )( null ).fold( I ), Left( null ).fold( I ));
+    });
+  });
+  
+  describe( 'fromValidation', function() {
+    it( 'returns a right in case all validations are true', ()=>{
+      const e = fromValidations([
+        [n => n > 1],
+        [n => n < 3],
+        [n => n === 2]
+      ])( 2 );
+      assert.deepEqual( e.fold( null, I ), Right( 2 ).fold( null, I ));
+    });
+    it( 'returns a Left in case validation is false', ()=>{
+      const e = fromValidations([
+        [ n => n > 1, '' ],
+        [ n => n < 3, '' ],
+        [ n => n === 2, '' ],
+        [ n => n === 3, 'El numero es invalido' ],
+      ])( 2 ).fold( I,I );
+      assert.deepEqual( e, ['El numero es invalido']);
     });
   });
   

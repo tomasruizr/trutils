@@ -1,5 +1,6 @@
 const { curry, I, isFunction, False, True } = require( '../functions.js' );
 const { seek } = require( '../arrays.js' );
+const { push } = require( 'transducers.js' );
 
 const Right = x =>
   ({
@@ -42,7 +43,14 @@ const fromValidation = curry(( conditionOrFunction, onFalse = I, onTrue = I, sub
   return data ? Right( onTrue( subject )) : Left( onFalse( subject ));
 }, 3 );
 
-// TODO: Seria cool un from validation donde se sumarizan todos los posibles errores y devuelve un arreglo de errores.
+const fromValidations = curry(( conditionsOrFunctions, subject ) => {
+  const errors = conditionsOrFunctions.reduce(( acc, conditionOrFunction ) => {
+    const data = isFunction( conditionOrFunction[0]) ? conditionOrFunction[0]( subject ) : conditionOrFunction[0];
+    !data && acc.push( conditionOrFunction[1]);
+    return acc;
+  },[]);
+  return errors.length ? Left( errors ) : Right( subject );
+});
 
 const fromOptions = curry(( conditionsOrFunctions, subject ) =>
   seek( fns => 
@@ -76,6 +84,7 @@ module.exports = {
   fromFalseable,
   fromOptions,
   fromValidation,
+  fromValidations,
   tryCatch,
   isEither,
   of: Right,
