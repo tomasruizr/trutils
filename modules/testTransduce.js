@@ -5,7 +5,10 @@ const { I, isObject, isArray } = require( './functions.js' );
 // utils
 //*******************************************
 
+const init = obj => obj['@@transducer/init'] || obj.init;
 const step = obj => obj['@@transducer/step'] || obj.step;
+const value = obj => obj['@@transducer/value'] || obj.value;
+const result = obj => obj['@@transducer/result'] || obj.result;
 
 const Reduced = ( value ) => ({
   '@@transducer/reduced': true,
@@ -34,8 +37,8 @@ const getIterator = ( collection ) => {
 };
 
 const defaultReducerProps = reducer => ({
-  '@@transducer/init': ( ...args ) => reducer['@@transducer/init']( ...args ),
-  '@@transducer/result': ( ...args ) => reducer['@@transducer/result']( ...args )
+  '@@transducer/init': ( ...args ) => init( reducer )( ...args ),
+  '@@transducer/result': ( ...args ) => result( reducer )( ...args )
 });
 
 //*******************************************
@@ -48,7 +51,7 @@ const MapReducer = ( fn, reducer ) => ({
 
 const FilterReducer = ( predicate, reducer ) => ({
   ...defaultReducerProps( reducer ),
-  '@@transducer/step': ( acc, curr ) => predicate( curr ) ? reducer['@@transducer/step']( acc, curr ) : acc,
+  '@@transducer/step': ( acc, curr ) => predicate( curr ) ? step( reducer )( acc, curr ) : acc,
 });
 
 const ReduceReducer = ( fn, init, reducer ) => ({
@@ -56,7 +59,7 @@ const ReduceReducer = ( fn, init, reducer ) => ({
   '@@transducer/result': () => init,
   '@@transducer/step': ( acc, curr ) => {
     init = fn( init, curr );
-    return reducer['@@transducer/step']( acc, curr );
+    return step( reducer )( acc, curr );
   },
 });
 
@@ -83,21 +86,20 @@ const filter = predicate => reducer => FilterReducer( predicate, reducer );
 // Functions
 const transduce = ( xf , reducer, initialValue, collection ) => {
   if ( !collection ) return ( coll ) => transduce( xf, reducer, initialValue, coll ); 
-  if ( !initialValue ) initialValue = ( xf['@@transducer/init'] || xf.init )(); 
+  if ( !initialValue ) initialValue = ( init( xf ))(); 
   const transformedReducer = xf( reducer );
-  const step = transformedReducer['@@transducer/step'] || transformedReducer.step;
   let accumulation = initialValue;
   const iter = getIterator( collection );
   let val = iter.next();
   while( !val.done ) {
-    accumulation = step( accumulation, val.value );
+    accumulation = step( reducer )( accumulation, val.value );
     if( isReduced( accumulation )) {
-      accumulation = accumulation['@@transducer/value'] || accumulation.value;
+      accumulation = value( accumulation );
       break;
     }
     val = iter.next();
   }
-  return transformedReducer['@@transducer/result']( accumulation );
+  return result( transformedReducer )( accumulation );
 };
 
 const into = ( to, xf, collection ) => {
