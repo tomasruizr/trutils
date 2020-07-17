@@ -10,6 +10,17 @@ const step = obj => obj['@@transducer/step'] || obj.step;
 const value = obj => obj['@@transducer/value'] || obj.value;
 const result = obj => obj['@@transducer/result'] || obj.result;
 
+const StandardReducer = ( description ) => ({
+  'init': description.init || description['@@tranducer/init'],
+  'step': description.step || description['@@tranducer/step'],
+  'value': description.value || description['@@tranducer/value'],
+  'result': description.result || description['@@tranducer/result'],    
+  '@@tranducer/init': description['@@tranducer/init'] || description.init,
+  '@@tranducer/step': description['@@tranducer/step'] || description.step,
+  '@@tranducer/value': description['@@tranducer/value'] || description.value,
+  '@@tranducer/result': description['@@tranducer/result'] || description.result,
+});
+
 const Reduced = ( value ) => ({
   '@@transducer/reduced': true,
   '@@transducer/value': value
@@ -92,7 +103,7 @@ const transduce = ( xf , reducer, initialValue, collection ) => {
   const iter = getIterator( collection );
   let val = iter.next();
   while( !val.done ) {
-    accumulation = step( reducer )( accumulation, val.value );
+    accumulation = step( transformedReducer )( accumulation, val.value );
     if( isReduced( accumulation )) {
       accumulation = value( accumulation );
       break;

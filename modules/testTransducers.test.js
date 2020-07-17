@@ -1,4 +1,4 @@
-const { seq, into, map, filter, reduce } = require( './testTransduce.js' );
+const { seq, into, map, filter, reduce, Reduced } = require( './testTransduce.js' );
 const { compose } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
@@ -71,10 +71,14 @@ describe( 'transducers', function() {
     });
   });
   describe( 'creation of on the spot transducer', function() {
-    it( 'makes use of an on-the-spot creation', () => {
+    it.only( 'makes use of an on-the-spot creation', () => {
       const nth = ( iteration, init = 0 ) => reducer => ({
         result: reducer['@@transducer/result'],
-        step: ( acc, curr ) => ++init < iteration ? reducer( acc, curr ) : acc
+        // result: reducer.result,
+        step: ( acc, curr ) => {
+          acc;//?
+          return init++ < iteration ? reducer['@@transducer/step']( acc, curr ) : Reduced( acc ) ; }
+        // return init++ < iteration ? reducer.step( acc, curr ) : Reduced( acc ) ; }
       });
       const arr = [...Array( 10 ).keys()];
       const result = into([],
@@ -82,11 +86,11 @@ describe( 'transducers', function() {
           filter( num => num % 2 === 0 ),
           map( num => num * 10 ),
           map( num => num / 2 ),
-          // nth( 3 )
+          nth( 2 )
         ),
         arr
       ); //?.$
-      assert.deepEqual( result, [ 0, 10, 20 ]);
+      assert.deepEqual( result, [ 0, 10 ]);
     });
   });
 });
