@@ -57,6 +57,23 @@ const defaultReducerProps = reducer => ({
 });
 
 //*******************************************
+// Transformers
+//*******************************************
+
+const ArrayReducer = ()=>StandardReducer({
+  '@@transducer/init': ( ...args ) => [...args],
+  '@@transducer/result': I,
+  '@@transducer/step': ( array, value ) => { array.push( value ); return array ; },
+});
+
+const ObjectReducer = ()=>StandardReducer({
+  '@@transducer/init': ( args ) => args || {},
+  '@@transducer/result': I,
+  '@@transducer/step': ( object, value ) => 
+    isArray( value ) && value.length === 2 ? assoc( ...value, object ) : Object.keys( value ).forEach( k=> assoc( k, value[k], object )),
+});
+
+//*******************************************
 // Reducer types
 //*******************************************
 const MapReducer = ( fn, reducer ) => StandardReducer({
@@ -83,21 +100,8 @@ const ReduceReducer = ( fn, initial, reducer ) => StandardReducer({
   },
 });
 
-const ArrayReducer = ()=>StandardReducer({
-  '@@transducer/init': ( ...args ) => [...args],
-  '@@transducer/result': I,
-  '@@transducer/step': ( array, value ) => { array.push( value ); return array ; },
-});
-
-const ObjectReducer = ()=>StandardReducer({
-  '@@transducer/init': ( args ) => args || {},
-  '@@transducer/result': I,
-  '@@transducer/step': ( object, value ) => 
-    isArray( value ) && value.length === 2 ? assoc( ...value, object ) : Object.keys( value ).forEach( k=> assoc( k, value[k], object )),
-});
-
 //*******************************************
-// transformers
+// operations
 //*******************************************
 const map = fn => reducer => MapReducer( fn, reducer );
 const reduce = ( fn, init ) => reducer => ReduceReducer( fn, init, reducer );
@@ -172,7 +176,7 @@ module.exports = {
   defaultReducerProps,
   Reduced,
   isReduced,
-  // transformers
+  // operations
   map,
   filter,
   reduce,
