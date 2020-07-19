@@ -1,6 +1,5 @@
 const { curry, I, isFunction, False, True } = require( '../functions.js' );
 const { seek } = require( '../arrays.js' );
-const { push } = require( 'transducers.js' );
 
 const Right = x =>
   ({

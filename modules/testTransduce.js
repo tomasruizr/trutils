@@ -11,14 +11,14 @@ const value = obj => obj['@@transducer/value'] || obj.value;
 const result = obj => obj['@@transducer/result'] || obj.result;
 
 const StandardReducer = ( description ) => ({
-  'init': description.init || description['@@tranducer/init'],
-  'step': description.step || description['@@tranducer/step'],
-  'value': description.value || description['@@tranducer/value'],
-  'result': description.result || description['@@tranducer/result'],    
-  '@@tranducer/init': description['@@tranducer/init'] || description.init,
-  '@@tranducer/step': description['@@tranducer/step'] || description.step,
-  '@@tranducer/value': description['@@tranducer/value'] || description.value,
-  '@@tranducer/result': description['@@tranducer/result'] || description.result,
+  'init': description.init || description['@@transducer/init'],
+  'step': description.step || description['@@transducer/step'],
+  'value': description.value || description['@@transducer/value'],
+  'result': description.result || description['@@transducer/result'],    
+  '@@transducer/init': description['@@transducer/init'] || description.init,
+  '@@transducer/step': description['@@transducer/step'] || description.step,
+  '@@transducer/value': description['@@transducer/value'] || description.value,
+  '@@transducer/result': description['@@transducer/result'] || description.result,
 });
 
 const Reduced = ( value ) => ({
@@ -33,10 +33,14 @@ const ObjectIterator = obj => {
   let index = 0;
   return {
     next: () => {
-      index < keys.length ? ++index && {
-        value: [ keys[index], obj[keys[index]] ],
-        done: false
-      } : { done : true };
+      if ( index < keys.length ) {
+        const res = {
+          value: [ keys[index], obj[keys[index]] ],
+          done: false
+        };
+        index++;
+        return res;
+      } else return { done : true };
     }
   };
 };
@@ -55,32 +59,37 @@ const defaultReducerProps = reducer => ({
 //*******************************************
 // Reducer types
 //*******************************************
-const MapReducer = ( fn, reducer ) => ({
+const MapReducer = ( fn, reducer ) => StandardReducer({
   ...defaultReducerProps( reducer ),
-  '@@transducer/step': ( acc, curr ) => step( reducer )( acc, fn( curr )),
+  '@@transducer/step': ( acc, curr ) => step( reducer )( acc, fn( curr, acc )),
 });
 
-const FilterReducer = ( predicate, reducer ) => ({
+const FilterReducer = ( predicate, reducer ) => StandardReducer({
   ...defaultReducerProps( reducer ),
-  '@@transducer/step': ( acc, curr ) => predicate( curr ) ? step( reducer )( acc, curr ) : acc,
+  '@@transducer/step': ( acc, curr ) => predicate( curr, acc ) ? step( reducer )( acc, curr ) : acc,
 });
 
-const ReduceReducer = ( fn, init, reducer ) => ({
+const WhileReducer = ( predicate, reducer ) => StandardReducer({
   ...defaultReducerProps( reducer ),
-  '@@transducer/result': () => init,
+  '@@transducer/step': ( acc, curr ) => predicate( curr, acc ) ? step( reducer )( acc, curr ) : Reduced( acc )
+});
+
+const ReduceReducer = ( fn, initial, reducer ) => StandardReducer({
+  ...defaultReducerProps( reducer ),
+  '@@transducer/result': () => initial,
   '@@transducer/step': ( acc, curr ) => {
-    init = fn( init, curr );
+    initial = fn( initial, curr, acc );
     return step( reducer )( acc, curr );
   },
 });
 
-const ArrayReducer = ()=>({
+const ArrayReducer = ()=>StandardReducer({
   '@@transducer/init': ( ...args ) => [...args],
   '@@transducer/result': I,
   '@@transducer/step': ( array, value ) => { array.push( value ); return array ; },
 });
 
-const ObjectReducer = ()=>({
+const ObjectReducer = ()=>StandardReducer({
   '@@transducer/init': ( args ) => args || {},
   '@@transducer/result': I,
   '@@transducer/step': ( object, value ) => 
@@ -93,6 +102,31 @@ const ObjectReducer = ()=>({
 const map = fn => reducer => MapReducer( fn, reducer );
 const reduce = ( fn, init ) => reducer => ReduceReducer( fn, init, reducer );
 const filter = predicate => reducer => FilterReducer( predicate, reducer );
+const dedupe = ( allValues = false, lastValue ) => reducer => FilterReducer(( value, acc ) => {
+  let notDuped;
+  if ( !allValues ){
+    notDuped = value !== lastValue;
+    lastValue = value;
+  } else {
+    notDuped = !( Array.isArray( acc ) ? acc : Object.values( acc )).includes( value );
+  } 
+  return notDuped;
+}, reducer );
+const take = ( count = Infinity ) => reducer => WhileReducer(() => {
+  return count-- > 0;
+}, reducer );
+const skip = ( count = 0 ) => reducer => FilterReducer(() => {
+  return count-- <= 0;
+}, reducer );
+const skipWhile = ( predicate, state = false ) => reducer => FilterReducer(( value, acc ) => {
+  if ( !state ) 
+    return state = !predicate( value, acc );
+  return true;
+}, reducer );
+const takeUntil = ( predicate ) => reducer => WhileReducer(( value, acc ) => {
+  return predicate( value, acc );
+}, reducer );
+
 
 // Functions
 const transduce = ( xf , reducer, initialValue, collection ) => {
@@ -115,7 +149,6 @@ const transduce = ( xf , reducer, initialValue, collection ) => {
 
 const into = ( to, xf, collection ) => {
   if ( !collection ) return coll => into( to, xf, coll );
-  if ( !xf || !collection ) throw new Error( 'transform function and collection must be present' );
   return transduce( xf, isArray( to ) ? ArrayReducer() : ObjectReducer(), to, collection );
 };
 
@@ -124,22 +157,30 @@ const seq = ( xf, collection ) => {
   return into( isArray( collection ) ? [] : {}, xf, collection );
 };
 
-// TODO: Probar un transduce con stream
-// TODO: Hacer un Bbenchmark contra transducers.js
-// TODO: Asegurar que funciona contra immutable y que no se creen listas nuevas
-
 //*******************************************
 // Public Interface
 //*******************************************
 
 module.exports = {
+  // Reducers
+  FilterReducer,
+  MapReducer,
+  ReduceReducer,
+  WhileReducer,
   // utils
+  StandardReducer,
+  defaultReducerProps,
   Reduced,
   isReduced,
   // transformers
   map,
   filter,
   reduce,
+  dedupe,
+  take,
+  skip,
+  takeUntil,
+  skipWhile,
   // functions
   transduce,
   into,
