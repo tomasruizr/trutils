@@ -1,11 +1,17 @@
 const { range, push, unshift, seek, foldMap } = require( './arrays.js' );
 const { assert } = require( 'chai' );
 
-const Intersection = xs => ({
-  xs,
-  concat: ({ xs: ys }) =>
-    Intersection( xs.filter( x => ys.some( y => x === y )))
-});
+const Sum = value =>
+  ({
+    value,
+    map: fn => Sum( fn( value )),
+    concat: ({ value: otherValue }) => Sum( value + otherValue ),
+  });
+const All = x =>
+  ({
+    x,
+    concat: ({ x: y }) => All( x && y ),
+  });
 
 describe( 'arrays.js', function() {
   describe( 'push', function() {
@@ -18,10 +24,21 @@ describe( 'arrays.js', function() {
   });
   
   describe( 'foldMap', function() {
+    it( 'Concats an array of functor semigroups', () => {
+      const arr = [ Sum( 1 ), Sum( 2 ), Sum( 3 ) ];  
+      const fm = foldMap( x=>x * 2, Sum( 0 ), arr );
+      assert.equal( fm.value, 12 );
+    });
+    
     it( 'Concats an array of semigroups', () => {
-      // const arr = [ Intersection([ 1,2,3 ]), Intersection([2]), Intersection([ 2,3 ]) ];  
+      const arr = [ All( true ), All( true ), All( true ) ];  
+      const fm = foldMap( x=>x , All( true ), arr );
+      assert.equal( fm.x, true );
+    });
+    
+    it( 'Concats an array of arrays', () => {
       const arr = [[ 1,2,3 ], [2], [ 2,3 ]];  
-      assert.deepEqual( foldMap( num => num * 2, Intersection([2]), arr ).xs, [4]);
+      assert.deepEqual( foldMap( x=>x, [], arr ), [ 1,2,3,2,2,3 ]);
     });
   });
 
