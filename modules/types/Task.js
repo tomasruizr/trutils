@@ -1,16 +1,6 @@
 // const { seek } = require( '../arrays.js' );
 // const { curry, False } = require( '../functions.js' );
 const Task = require( 'data.task' );
-// const Box = require( './Box.js' );
-// const Either = require( './Either.js' );
-
-// Task.fromOptions = curry(( conditionsOrFunctions, subject ) => 
-//   seek( fns => 
-//     Task.ensureTask( fns[0]( subject ))
-//       .( False, () => Box( fns[1]( subject ))
-//         .fold( Box )
-//       )
-//   , conditionsOrFunctions ));
 
 
 Task.fromPromise = ( maybePromise ) => new Task(( rej, res ) => 
