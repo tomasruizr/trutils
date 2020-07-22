@@ -95,7 +95,7 @@ describe( 'objects', function() {
     };
     it( 'calls mSet when all the params are passed', () => {
       assocPath([ 'a','b','d' ], 4, obj );
-      assert.deepEqual({ a:{ b:{ c:'hello', d:4 }}}, obj );
+      assert.deepEqual( obj, { a:{ b:{ c:'hello', d:4 }}});
     });
     it( 'Accepts curried params', () => {
       const res = assocPath([ 'a','b','d' ], 5 );
@@ -442,7 +442,7 @@ describe( 'objects', function() {
   });
   describe( 'appendDeep', function() {
     it( 'pushes the value into a deep array and return the array', () => 
-      assert.deepEqual( appendDeep(['2'], 5, [ 1,2, [ 3,4 ]]) , [ 1,2 ,[ 3,4,5 ]]));
+      assert.deepEqual( appendDeep([ 'body', 'x' ], 5, {}) , { body:{ x:[5]}}));
     it( 'pushes the value into a deep array and return the array', () => 
       assert.deepEqual( appendDeep([ 2, 'data','numbers' ], 'some name', [ 1,2, { data:{ numbers:[]}}]) , [ 1, 2, { data: { numbers: ['some name']}}]));
     it( 'pushes the value into a deep array and return the array', () => 

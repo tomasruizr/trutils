@@ -61,8 +61,10 @@ const assoc = curry(( objectPath, nValue, obj ) => {
 
 function assocPath( objectPath, nValue, obj ) {
   if ( !obj ) return obj => assocPath( objectPath, nValue, obj );
-  const lastPath = objectPath.pop();
-  const lastPart = objectPath.reduce(( currentObject, part ) => {
+  const path = objectPath.slice( 0 );
+  const lastPath = path.pop();
+  lastPath;
+  const lastPart = path.reduce(( currentObject, part ) => {
     currentObject[part] = currentObject[part] || {};
     return currentObject[part];
   }, obj );
@@ -97,7 +99,12 @@ const omit = ( props, obj ) => !obj ? ( obj ) => omit( props, obj ) :
   , Array.isArray( obj ) ? [] : {});
 
 const appendDeep = curry(( path, value, list ) => {
-  propPath( path, list ).push( value );
+  const lastPath = path.slice( -1 )[0];
+  const lastPart = path.reduce(( currentObject, part ) => {
+    currentObject[part] = currentObject[part] || ( part === lastPath ? [] : {});
+    return currentObject[part];
+  }, list );
+  lastPart.push( value );
   return list;
 });
 
