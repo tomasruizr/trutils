@@ -32,15 +32,15 @@ const First = x =>
       `First(${x})`
   });
 
-const Sum = x =>
+const Sum = value =>
   ({
-    x,
-    concat: ({ x: y }) =>
-      Sum( x + y ),
+    x: value,
+    concat: ({ value: otherValue }) =>
+      Sum( value + otherValue ),
     inspect: () =>
-      `Sum(${x})`,
+      `Sum(${value})`,
     toString: () =>
-      `Sum(${x})`
+      `Sum(${value})`
   });
 
 //const res = Sum(1).concat(Sum(2))
