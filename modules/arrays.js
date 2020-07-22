@@ -25,8 +25,8 @@ const seek = ( predicate, array ) => {
   }
 };
 
-const foldMap = ( fn, empty, list ) => 
-  list.reduce(( acc, x, i ) => acc.concat( fn( x, i )), empty );
+const foldMap = ( fn, point, functorArray ) => 
+  functorArray.reduce(( acc, functor ) => acc.concat( functor.map ? functor.map( fn ) : fn( functor )), point );
 
 module.exports = {
   seek,
