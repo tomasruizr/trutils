@@ -1,5 +1,3 @@
-// const { seek } = require( '../arrays.js' );
-// const { curry, False } = require( '../functions.js' );
 const Task = require( 'data.task' );
 
 

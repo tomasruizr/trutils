@@ -17,7 +17,7 @@ function unshift( value, list ) {
   return list;
 }
 
-const seek = ( predicate, array ) => {
+const findAndPerform = ( predicate, array ) => {
   for ( const item of array ) {
     const result = predicate( item );
     if ( !result ) continue;
@@ -29,7 +29,7 @@ const foldMap = ( fn, point, functorArray ) =>
   functorArray.reduce(( acc, functor ) => acc.concat( functor.map ? functor.map( fn ) : fn( functor )), point );
 
 module.exports = {
-  seek,
+  findAndPerform,
   range,
   push,
   foldMap,

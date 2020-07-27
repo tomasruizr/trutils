@@ -1,6 +1,5 @@
 const { curry, I, isFunction, False, True } = require( '../functions.js' );
-const { seek } = require( '../arrays.js' );
-const { push } = require( 'transducers.js' );
+const { findAndPerform } = require( '../arrays.js' );
 
 const Right = x =>
   ({
@@ -53,7 +52,7 @@ const fromValidations = curry(( conditionsOrFunctions, subject ) => {
 });
 
 const fromOptions = curry(( conditionsOrFunctions, subject ) =>
-  seek( fns => 
+  findAndPerform( fns => 
     fromFalseable( fns[0]( subject ))
       .fold( False, () => Right( fns[1]( subject )))
   , conditionsOrFunctions ) || Left( null ));
@@ -73,7 +72,7 @@ const any = ( conditionsOrFunctions, subject ) => !subject ? subject => any( con
     .reduce(( acc, current )=> acc || ( isFunction( current ) ? !!current( subject ) : !!current ), false );
 
 const all = ( conditionsOrFunctions, subject ) => !subject ? subject => all( conditionsOrFunctions, subject ) :
-  fromFalseable( seek( current => ( isFunction( current ) ? !current( subject ) : !current ), conditionsOrFunctions ))
+  fromFalseable( findAndPerform( current => ( isFunction( current ) ? !current( subject ) : !current ), conditionsOrFunctions ))
     .fold( True, False );
 
 
