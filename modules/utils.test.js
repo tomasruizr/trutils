@@ -1,8 +1,15 @@
 const { I, noop, isError } = require( './functions.js' );
-const { jsonParse, runMiddleWares, cor, eitherToTask, fromNullableToTask, fromFalseableToTask } = require( './utils.js' );
 const Task = require( './types/Task.js' );
 const Either = require( './types/Either.js' );
 const { assert } = require( 'chai' );
+const { 
+  jsonParse,
+  runMiddleWares,
+  cor,
+  eitherToTask,
+  fromNullableToTask,
+  fromFalseableToTask,
+  ensureTask } = require( './utils.js' );
 
 describe( 'utils', function() {
   describe( 'jsonParse', function() {
@@ -252,6 +259,17 @@ describe( 'utils', function() {
     it( 'returns task of anything', () => {
       assert.isTrue( Task.isTask( fromFalseableToTask( array=>array.length )(['hola'])));
       fromFalseableToTask( array=>array.length )(['hola']).fork(() => assert( false ), () => assert( true ));
+    });
+  });
+
+  describe( 'ensureTask', function() {
+    it( 'Ensures the value passed is a Task or casts one', () => {
+      const t1 = ensureTask( 'hola' );
+      t1.fork( noop, data => assert.equal( data, 'hola' ));
+      const t2 = ensureTask( Task.of( 'hola' ));
+      t2.fork( noop, data => assert.equal( data, 'hola' ));
+      const t3 = ensureTask( new Task(( rej, res ) => res( 'hola' )));
+      t3.fork( noop, data => assert.equal( data, 'hola' ));
     });
   });
 });

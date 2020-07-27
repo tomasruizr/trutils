@@ -6,9 +6,4 @@ Task.fromPromise = ( maybePromise ) => new Task(( rej, res ) =>
 
 Task.isTask = ( maybeTask ) => maybeTask instanceof Task;
 
-Task.ensureTask = ( maybeTask ) => {
-  if ( !maybeTask ) return Task.of();
-  return Task.isTask( maybeTask ) ? maybeTask : Task.fromPromise( maybeTask );
-};
-
 module.exports = Task;
