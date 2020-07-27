@@ -49,6 +49,12 @@ const map = ( fn, collection ) => {
   return copy;
 };
 
+const reduce = ( reducer, init, collection ) => { 
+  if ( !collection ) return collection => reduce( reducer, init, collection );
+  if ( Array.isArray( collection )) return collection.reduce( reducer, init );
+  throw new Error( 'Reduce for non array not implemented' );
+};
+
 
 const traverse = function( point, f, array ) {
   return array.reduce(( acc, item ) =>
@@ -72,6 +78,7 @@ module.exports = {
   isObject,
   isString,
   map,
+  reduce,
   noop,
   pipe,
   True,
