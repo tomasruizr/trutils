@@ -36,15 +36,16 @@ describe( 'Either', function() {
   describe( 'ap', function() {
     it( 'Applies a Functor(value) to a Right(function)', () => {
       Right( str1 => str2 => `${str1} ${str2}`.toUpperCase())
-        .ap( Box( 'hola' ))
-        .ap( Box( 'pana' ))
-        .fold( str => assert.equal( str, 'HOLA PANA' ));
+        .ap( Right( 'hola' ))
+        .ap( Right( 'pana' ))
+        .fold(() => assert( false ), str => assert.equal( str, 'HOLA PANA' ));
     });
     it( 'Left wont apply the functions and fold to left', () => {
-      Left( str1 => str2 => `${str1} ${str2}`.toUpperCase())
-        .ap( Box( 'hola' ))
-        .ap( Box( 'pana' ))
-        .fold( assert.isFunction );
+      const result = Left( str1 => str2 => `${str1} ${str2}`.toUpperCase())
+        .ap( Right( 'hola' ))
+        .ap( Right( 'pana' ))
+        .fold(() => false, () => true );
+      assert.isFalse( result );
     });
   });
 
