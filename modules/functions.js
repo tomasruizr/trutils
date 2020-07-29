@@ -30,6 +30,8 @@ const curry = ( fn, arity ) =>{
   };
 };
 
+const eq = curry(( expected, actual ) => expected === actual );
+
 const compose = ( ...functions ) =>
   functions.reduce(( accumulator, fn ) => ( ...args ) => accumulator( fn( ...args )), I );
   
@@ -55,6 +57,9 @@ const reduce = ( reducer, init, collection ) => {
   throw new Error( 'Reduce for non array not implemented' );
 };
 
+const concat = ( ...semigroup ) => semigroup.slice( 1 ).reduce(( acc, curr )=>
+  acc.concat( curr ), semigroup[0]);
+
 
 const traverse = function( point, f, array ) {
   return array.reduce(( acc, item ) =>
@@ -62,6 +67,7 @@ const traverse = function( point, f, array ) {
 };
 
 module.exports = {
+  eq,
   ap,
   apply,
   compose,
@@ -78,6 +84,7 @@ module.exports = {
   isObject,
   isString,
   map,
+  concat,
   reduce,
   noop,
   pipe,

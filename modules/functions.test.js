@@ -1,6 +1,8 @@
 const { createWith } = require( './creational.js' );
+const types = require( './types/types.js' );
 const Task = require( './types/Task.js' );
 const { 
+  eq,
   ap,
   apply,
   curry,
@@ -16,6 +18,7 @@ const {
   isError,
   ifElse,
   map,
+  concat,
   traverse
 } = require( './functions.js' );
 const { assert } = require( 'chai' );
@@ -165,6 +168,15 @@ describe( 'Functions', function() {
     });
   });
   
+  describe( 'eq', function() {
+    it( 'does a comparison between two values', () => {
+      assert.isTrue( eq( true, true ));
+      assert.isTrue( eq( 1, 1 ));
+      assert.isTrue( eq( 0, 0 ));
+      assert.isTrue( eq( 'hola', 'hola' ));
+    });
+  });
+
   describe( 'ap', function() {
     it( 'applies list of value to a list of functions', () => {
       const fnList = ap([
@@ -296,6 +308,15 @@ describe( 'Functions', function() {
     });
     it( 'works on arrays', () => {
       assert.deepEqual( map( x => x * 2, [ 2,4 ]), [ 4,8 ]);
+    });
+  });
+
+  describe( 'concat', function() {
+    it( 'concats a list of semigroups', () => {
+      assert.equal( concat( 'a', 'b', 'c' ), 'abc' );
+      assert.deepEqual( concat(['a'], ['b'], ['c']), [ 'a','b','c' ]);
+      const All = types.All;
+      assert.equal( concat( All( true ), All( true ), All( true )).x, All( true ).x );
     });
   });
 
