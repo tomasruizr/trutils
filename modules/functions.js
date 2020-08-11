@@ -54,7 +54,9 @@ const map = ( fn, collection ) => {
 const reduce = ( reducer, init, collection ) => { 
   if ( !collection ) return collection => reduce( reducer, init, collection );
   if ( Array.isArray( collection )) return collection.reduce( reducer, init );
-  throw new Error( 'Reduce for non array not implemented' );
+  let acc = init;
+  Object.keys( collection ).forEach( key => acc = reducer( acc, collection[key], key ));
+  return acc;
 };
 
 const concat = ( ...semigroup ) => semigroup.slice( 1 ).reduce(( acc, curr )=>

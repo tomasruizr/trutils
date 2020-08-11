@@ -19,7 +19,8 @@ const {
   ifElse,
   map,
   concat,
-  traverse
+  traverse,
+  reduce
 } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
@@ -332,6 +333,24 @@ describe( 'Functions', function() {
           result;//?
           done();
         });
+    });
+  });
+
+  describe( 'reduce', function() {
+    it( 'works on Objects', () => {
+      assert.deepEqual( reduce(( acc, val, key ) => {
+        acc.result += val;
+        acc.keys.push( key );
+        return acc;
+      }, { result:0, keys:[]}, {
+        a:1,
+        b:2,
+        c:3,
+        d:4
+      }), {
+        result: 10,
+        keys: [ 'a','b','c','d' ]
+      });
     });
   });
 });
