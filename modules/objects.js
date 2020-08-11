@@ -77,6 +77,11 @@ function fromPairs( pairs ){
   pairs.forEach(([ prop, value ]) => result[ prop ] = value );
   return result;
 }
+function toPairs( object ){
+  const result = [];
+  Object.keys( object ).forEach( key => result.push([ key, object[key] ]));
+  return result;
+}
 
 const has = ( prop, obj ) => !obj ? ( obj ) => has( prop, obj ) : Object.prototype.hasOwnProperty.call( obj, prop ); 
 
@@ -121,5 +126,6 @@ module.exports = {
   has,
   hasPath,
   omit,
-  fromPairs
+  fromPairs,
+  toPairs
 };
