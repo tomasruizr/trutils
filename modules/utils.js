@@ -20,7 +20,9 @@ const eitherToTask = e => e.fold( Task.rejected, ensureTask );
 
 const fromNullableToTask = value => Either.fromNullable( value ).fold( Task.rejected, ensureTask );
 
-const fromFalseableToTask = condition => value => Either.fromFalseable( condition( value )).fold(() => Task.rejected( value ), () => ensureTask( value ));
+const fromFalseableToTask = value => Either.fromFalseable( value ).fold(() => Task.rejected( value ), () => ensureTask( value ));
+
+const fromValidationToTask = condition => value => Either.fromFalseable( condition( value )).fold(() => Task.rejected( value ), () => ensureTask( value ));
 
 const ensureTask = ( maybeTask ) => {
   if ( !maybeTask ) return Task.of();
@@ -33,6 +35,7 @@ module.exports = {
   runMiddleWares,
   fromNullableToTask,
   fromFalseableToTask,
+  fromValidationToTask,
   ensureTask,
   cor
 };
