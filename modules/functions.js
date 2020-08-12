@@ -62,11 +62,9 @@ const reduce = ( reducer, init, collection ) => {
 const concat = ( ...semigroup ) => semigroup.slice( 1 ).reduce(( acc, curr )=>
   acc.concat( curr ), semigroup[0]);
 
-
-const traverse = function( point, f, array ) {
-  return array.reduce(( acc, item ) =>
-    acc.map( x => y => x.concat([y])).ap( f( item )), point([]));
-};
+const traverse = curry(( point, f, array ) =>
+  array.reduce(( acc, item ) =>
+    acc.map( x => y => x.concat([y])).ap( f( item )), point([])));
 
 module.exports = {
   eq,
