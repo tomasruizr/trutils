@@ -1,10 +1,10 @@
-const isArray = Array.isArray; 
-const isFunction = ( theFunction ) => typeof theFunction === 'function'; 
-const isObject = ( theObject ) => theObject instanceof Object && Object.getPrototypeOf( theObject ) === Object.getPrototypeOf({}); 
-const isNumber = ( theNumber ) => typeof theNumber === 'number'; 
-const isString = ( theString ) => typeof theString === 'string'; 
-const isError = ( error ) => error instanceof Error; 
-const ensureArray = ( theArray ) => isArray( theArray ) ? theArray : ( theArray != null ? [theArray] : []); 
+const isArray = Array.isArray;
+const isFunction = ( theFunction ) => typeof theFunction === 'function';
+const isObject = ( theObject ) => theObject instanceof Object && Object.getPrototypeOf( theObject ) === Object.getPrototypeOf({});
+const isNumber = ( theNumber ) => typeof theNumber === 'number';
+const isString = ( theString ) => typeof theString === 'string';
+const isError = ( error ) => error instanceof Error;
+const ensureArray = ( theArray ) => isArray( theArray ) ? theArray : ( theArray != null ? [theArray] : []);
 const True = () => true;
 const False = () => false;
 const I = ( x ) => x;
@@ -23,9 +23,9 @@ const ap = ( functions, otherArray ) => {
 const curry = ( fn, arity ) =>{
   return function _curry( ...args ){
     if ( arguments.length >= ( arity && arity + 1 || fn.length )) return fn( ...args );
-    return ( ...argsN )=> _curry( 
-      ...( arity ? Array.from( new Array( arity ), ( v, i )=> args[i]) : args ), 
-      ...argsN 
+    return ( ...argsN )=> _curry(
+      ...( arity ? Array.from( new Array( arity ), ( v, i )=> args[i]) : args ),
+      ...argsN
     );
   };
 };
@@ -34,8 +34,8 @@ const eq = curry(( expected, actual ) => expected === actual );
 
 const compose = ( ...functions ) =>
   functions.reduce(( accumulator, fn ) => ( ...args ) => accumulator( fn( ...args )), I );
-  
-const pipe = ( ...functions ) => 
+
+const pipe = ( ...functions ) =>
   functions.reduceRight(( accumulator, fn ) => ( ...args ) => accumulator( fn( ...args )), I );
 
 const ifElse = curry(( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
@@ -43,7 +43,7 @@ const ifElse = curry(( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
   return condition ? onTrue( data ) : onFalse( data );
 }, 3 );
 
-const map = ( fn, collection ) => { 
+const map = ( fn, collection ) => {
   if ( !collection ) return collection => map( fn, collection );
   if ( Array.isArray( collection )) return collection.map( fn );
   const copy = { ...collection };
@@ -51,7 +51,7 @@ const map = ( fn, collection ) => {
   return copy;
 };
 
-const reduce = ( reducer, init, collection ) => { 
+const reduce = ( reducer, init, collection ) => {
   if ( !collection ) return collection => reduce( reducer, init, collection );
   if ( Array.isArray( collection )) return collection.reduce( reducer, init );
   let acc = init;
@@ -62,10 +62,10 @@ const reduce = ( reducer, init, collection ) => {
 const concat = ( ...semigroup ) => semigroup.slice( 1 ).reduce(( acc, curr )=>
   acc.concat( curr ), semigroup[0]);
 
-const traverse = curry(( point, f, array ) =>
-  array.reduce(( acc, item ) =>
-    acc.map( x => y => x.concat([y])).ap( f( item )), point([])));
-
+const traverse = curry(( point, fn, array ) =>{
+  return array.reduce(( acc, item ) =>
+    acc.map( x => y => x.concat([y])).ap( fn( item )), point([]));
+});
 module.exports = {
   eq,
   ap,
