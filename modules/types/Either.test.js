@@ -13,11 +13,26 @@ describe( 'Either', function() {
         .map( str=> str.toUpperCase())
         .fold( assertError, str => assert.equal( str, 'HOLA' ));
     });
-    it( 'maps the data inside a Left', () => {
+    it( 'skips the map of a Left', () => {
       Left( 'hola' )
         .map( str=> str.toUpperCase())
         .fold( str => assert.equal( str, 'hola' ), assertError );
     });
+  });
+
+  describe( 'leftMap', function() {
+    it( 'maps the data inside a Left', () => {
+      Left( 'hola' )
+        .leftMap( str=> str.toUpperCase())
+        .fold( str => assert.equal( str, 'HOLA' ), assertError );
+    });
+    it( 'maps the data inside a Left', () => {
+      Right( 'hola' )
+        .chain( str=> Left( str.toUpperCase()))
+        .leftMap( str => str.toLowerCase())
+        .map(() => 'NOTHING' )
+        .fold( str => assert.equal( str, 'hola' ), assertError );
+    });    
   });
 
   describe( 'chain', function() {
@@ -164,7 +179,7 @@ describe( 'Either', function() {
     });
   });
   
-  describe( 'fromValidation', function() {
+  describe( 'fromValidations', function() {
     it( 'returns a right in case all validations are true', ()=>{
       const e = fromValidations([
         [n => n > 1],

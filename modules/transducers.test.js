@@ -43,6 +43,17 @@ describe( 'reduce', function() {
     ); //?.$
     assert.equal( result, 100 );
   });
+  it( 'does nothing if array is empty', () => {
+    const arr = [ undefined, undefined ];
+    const result = seq(
+      compose(
+        filter( num => !!num ),
+        reduce(( accumulate, current ) => accumulate + current, 0 ),
+      ),
+      arr
+    ); //?.$
+    assert.equal( result, 0 );
+  });
 });
 describe( 'into', function() {
   it( 'accepts curring', () => {
