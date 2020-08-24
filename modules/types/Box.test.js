@@ -2,7 +2,7 @@ const { I } = require( '../functions.js' );
 const Box = require( './Box.js' );
 const { fromCondition } = Box;
 const { assert } = require( 'chai' );
-
+const sinon = require( 'sinon' );
 
 describe( 'Box', function() {
   describe( 'fold', function() {
@@ -31,6 +31,20 @@ describe( 'Box', function() {
   describe( 'inspect', function() {
     it( 'inspects a value (show)', () => {
       assert.equal( Box( 'hola' ).inspect(), 'Box(hola)' );
+    });
+  });
+
+  describe( 'effect', function() {
+    it( 'makes a side effect operation', done => {
+      const spy = sinon.spy();
+      Box( 'string' )
+        .effect( spy )
+        .map(( str ) => {
+          assert.equal( str, 'string' );
+          assert.isTrue( spy.calledOnce );
+          assert.isTrue( spy.calledWith( 'string' ));
+        })
+        .fold(() => done());
     });
   });
 

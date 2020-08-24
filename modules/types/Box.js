@@ -5,6 +5,7 @@ const Box = value => ({
   chain: f => f( value ),
   ap: other => other.map( value ),
   map: f => Box( f( value )),
+  effect: ( f ) => ( f( value ), Box( value )), 
   concat: ({ value: otherValue }) =>
     Box( value.concat( otherValue )),
   fold: f => f( value ),
