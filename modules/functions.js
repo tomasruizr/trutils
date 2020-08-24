@@ -43,10 +43,17 @@ const ifElse = curry(( conditionOrFunction, onTrue = I, onFalse = I, data ) => {
   return condition ? onTrue( data ) : onFalse( data );
 }, 3 );
 
-const map = ( fn, collection ) => {
-  if ( !collection ) return collection => map( fn, collection );
-  if ( Array.isArray( collection )) return collection.map( fn );
-  const copy = { ...collection };
+const map = ( fn, functor ) => {
+  if ( !functor ) return collection => map( fn, collection );
+  if ( typeof functor.map === 'function' ) return functor.map( fn );
+  if ( functor[Symbol.iterator]){
+    const result = [];
+    for ( const item of functor ) {
+      result.push( fn( item ));
+    }
+    return result;
+  }
+  const copy = { ...functor };
   Object.keys( copy ).forEach( key => copy[key] = fn( copy[key], key ));
   return copy;
 };

@@ -311,6 +311,16 @@ describe( 'Functions', function() {
     it( 'works on arrays', () => {
       assert.deepEqual( map( x => x * 2, [ 2,4 ]), [ 4,8 ]);
     });
+    it( 'works on iterables', () => {
+      function* get(){
+        for ( let index = 0; index < 3; index++ ) {
+          yield index;
+        }
+      }
+      const i = get();
+      const result = map( x => x * 2, i );
+      assert.deepEqual( result , [ 0,2,4 ]);
+    });
   });
 
   describe( 'concat', function() {
