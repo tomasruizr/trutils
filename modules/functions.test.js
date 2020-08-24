@@ -20,7 +20,8 @@ const {
   map,
   concat,
   traverse,
-  reduce
+  reduce,
+  zip
 } = require( './functions.js' );
 const { assert } = require( 'chai' );
 
@@ -351,6 +352,20 @@ describe( 'Functions', function() {
         result: 10,
         keys: [ 'a','b','c','d' ]
       });
+    });
+  });
+  describe( 'zip', function() {
+    it( 'iterates a list of arrays at the same time', () => {
+      const iterations = [];
+      for ( const iteration of zip([ '1','2','3' ], [ 1,2,3 ], [ 'a','b','c' ])) {
+        iterations.push( iteration );
+      }
+      assert.deepEqual( iterations, [[ '1', 1, 'a' ], [ '2', 2, 'b' ], [ '3', 3, 'c' ]]);
+    });
+    it( 'Works with map and iterates a list of arrays at the same time', () => {
+      const iterations = [];
+      map( x => iterations.push( x ), zip([ '1','2','3' ], [ 1,2,3 ], [ 'a','b','c' ]));
+      assert.deepEqual( iterations, [[ '1', 1, 'a' ], [ '2', 2, 'b' ], [ '3', 3, 'c' ]]);
     });
   });
 });

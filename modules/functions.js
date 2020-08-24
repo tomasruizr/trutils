@@ -66,6 +66,14 @@ const traverse = curry(( point, fn, array ) =>{
   return array.reduce(( acc, item ) =>
     acc.map( x => y => x.concat([y])).ap( fn( item )), point([]));
 });
+
+function* zip ( ...arrays ) {
+  arrays.map( a => a.length );
+  const length = Math.min( ...arrays.map( a => a.length ));
+  for ( let index = 0; index < length; index++ ) {
+    yield [...arrays.map( a=>a[index])];
+  }
+}
 module.exports = {
   eq,
   ap,
@@ -89,4 +97,5 @@ module.exports = {
   noop,
   pipe,
   True,
+  zip
 };
