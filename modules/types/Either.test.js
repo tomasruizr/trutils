@@ -1,7 +1,8 @@
 const { I, True } = require( '../functions.js' );
-const { Left, Right, fromNullable, fromFalseable, fromValidation, fromValidations, fromOptions, isEither, all, any } = require( './Either.js' );
+const { of, Left, Right, fromNullable, fromFalseable, fromValidation, fromValidations, fromOptions, isEither, all, any } = require( './Either.js' );
 const Box = require( './Box.js' );
 const { assert } = require( 'chai' );
+const sinon = require( 'sinon' );
 const identity = x => x;
 
 describe( 'Either', function() {
@@ -45,6 +46,31 @@ describe( 'Either', function() {
       Left( 'hola' )
         .chain( str=> Right( str.toUpperCase()))
         .fold( str => assert.equal( str, 'hola' ), assertError );
+    });
+  });
+
+  describe( 'effect', function() {
+    it( 'makes a side effect operation if Right', done => {
+      const spy = sinon.spy();
+      Right( 'string' )
+        .effect( spy )
+        .map(( str ) => {
+          assert.equal( str, 'string' );
+          assert.isTrue( spy.calledOnce );
+          assert.isTrue( spy.calledWith( 'string' ));
+        })
+        .fold( done, () => done());
+    });
+    it( 'makes a side effect operation if Left', done => {
+      const spy = sinon.spy();
+      Left( 'string' )
+        .effect( spy )
+        .leftMap(( str ) => {
+          assert.equal( str, 'string' );
+          assert.isTrue( spy.calledOnce );
+          assert.isTrue( spy.calledWith( 'string' ));
+        })
+        .fold(() => done(), done );
     });
   });
 
