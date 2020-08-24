@@ -36,6 +36,25 @@ describe( 'Either', function() {
     });    
   });
 
+  describe( 'bimap', function() {
+    it( 'executes a map operation if is Right', done => {
+      of( 'String' )
+        .bimap( str => str.toUpperCase())
+        .map( str => {
+          assert.equal( str, 'STRING' );
+        })
+        .fold( done, () => done());
+    });
+    it( 'executes a map operation if is Left', done => {
+      Left( 'String' )
+        .bimap( str => str.toUpperCase())
+        .leftMap( str => {
+          assert.equal( str, 'STRING' );
+        })
+        .fold(() => done(), done );
+    });
+  });
+
   describe( 'chain', function() {
     it( 'chains the data inside a Right', () => {
       Right( 'hola' )

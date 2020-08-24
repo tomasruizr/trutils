@@ -8,6 +8,7 @@ const Right = x =>
     ap: other => other.map( x ),
     traverse: ( of, f ) => f( x ).map( Right ),
     map: f => Right( f( x )),
+    bimap: ( f, g = f ) => Right( g( x )),
     effect: ( f ) => ( f( x ), Right( x )), 
     leftMap: () => Right( x ),
     fold: ( f, g ) => g( x ),
@@ -25,6 +26,7 @@ const Left = x =>
     traverse: ( of ) => of( Left( x )),
     map: () => Left( x ),
     effect: ( f ) => ( f( x ), Left( x )), 
+    bimap: f => Left( f( x )),
     leftMap: ( f ) => Left( f( x )),
     fold: ( f ) => f( x ),
     concat: o =>
