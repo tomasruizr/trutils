@@ -9,7 +9,10 @@ const {
   eitherToTask,
   fromNullableToTask,
   fromFalseableToTask,
+  fromValidationToTask,
   ensureTask } = require( './utils.js' );
+
+const failTest = ( message ) => assert( false, message );
 
 describe( 'utils', function() {
   describe( 'jsonParse', function() {
@@ -263,6 +266,27 @@ describe( 'utils', function() {
         .chain( fromFalseableToTask )
         .rejectedMap(() => assert( false ))
         .fork( I, () => assert( true ));
+    });
+  });
+
+  describe( 'fromValidationToTask', function() {
+    it( 'returns rejected task of condition', () => {
+      assert.isTrue( Task.isTask( fromValidationToTask( arr=>arr.length )([])));
+      fromValidationToTask( arr=>arr.length )([]).fork(() => assert( true ), I );
+    });
+    it( 'returns task of anything', () => {
+      assert.isTrue( Task.isTask( fromValidationToTask( arr=>arr.length )(['hola'])));
+      fromValidationToTask( arr=>arr.length )(['hola']).fork( I, () => assert( true ));
+      Task.of( true )
+        .chain( fromValidationToTask )
+        .rejectedMap(() => assert( false ))
+        .fork( I, () => assert( true ));
+    });
+    it( 'works on map chaining', () => {
+      const test = ( num ) => Task.of( num )
+        .chain( fromValidationToTask( x=>x < 10 ));
+      test( 20 ).fork( I, failTest );
+      test( 5 ).fork( failTest, I );
     });
   });
 

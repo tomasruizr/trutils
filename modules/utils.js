@@ -22,7 +22,7 @@ const fromNullableToTask = value => Either.fromNullable( value ).fold( Task.reje
 
 const fromFalseableToTask = value => Either.fromFalseable( value ).fold(() => Task.rejected( value ), () => ensureTask( value ));
 
-const fromValidationToTask = condition => value => Either.fromFalseable( condition( value )).fold(() => Task.rejected( value ), () => ensureTask( value ));
+const fromValidationToTask = condition => value => Either.fromValidation( condition )( value ).fold(() => Task.rejected( value ), () => ensureTask( value ));
 
 const ensureTask = ( maybeTask ) => {
   if ( !maybeTask ) return Task.of();
