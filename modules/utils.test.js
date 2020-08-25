@@ -253,12 +253,16 @@ describe( 'utils', function() {
 
   describe( 'fromFalseableToTask', function() {
     it( 'returns rejected task of condition', () => {
-      assert.isTrue( Task.isTask( fromFalseableToTask( array=>array.length )([])));
-      fromFalseableToTask( array=>array.length )([]).fork(() => assert( true ), () => assert( false ));
+      assert.isTrue( Task.isTask( fromFalseableToTask([].length )));
+      fromFalseableToTask([].length ).fork(() => assert( true ), I );
     });
     it( 'returns task of anything', () => {
-      assert.isTrue( Task.isTask( fromFalseableToTask( array=>array.length )(['hola'])));
-      fromFalseableToTask( array=>array.length )(['hola']).fork(() => assert( false ), () => assert( true ));
+      assert.isTrue( Task.isTask( fromFalseableToTask(['hola'].length )));
+      fromFalseableToTask(['hola'].length ).fork( I, () => assert( true ));
+      Task.of( true )
+        .chain( fromFalseableToTask )
+        .rejectedMap(() => assert( false ))
+        .fork( I, () => assert( true ));
     });
   });
 
