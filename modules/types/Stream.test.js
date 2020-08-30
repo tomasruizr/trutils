@@ -85,9 +85,8 @@ describe( 'Streams', function() {
       t.map( function( x ) { return x * 2; }),
       t.dedupe(),
     );
-    const s2 = transduce( transducer, s1 );
-    // sCombine( function( s2 ) { results.push( s2()); }, [s2]);
-    on( data => results.push( data ), s2 );
+    transduce( transducer, s1 )
+      .map( data => results.push( data ));
     s1( 1 )( 1 )( 2 )( 3 )( 3 )( 3 )( 4 )( 2 );
     assert.deepEqual( results, [ 2,4,6,8,4 ]);
   });
