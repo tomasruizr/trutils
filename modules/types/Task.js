@@ -8,7 +8,7 @@ function Task( fork ) {
     Task(( reject, resolve ) =>
       fork( reject, value => 
         ( effectFunction( value ), resolve( value ))));
-
+  
   const chain = ( chainFunction ) =>
     Task(( reject, resolve ) =>
       fork( reject, chainValue => 
@@ -19,6 +19,14 @@ function Task( fork ) {
     Task(( reject, resolve ) =>
       fork( rejectedValue => reject( rejectedMap( rejectedValue ))
         , value => resolve( map( value ))));
+
+  const biEffect = ( rejectedEffectFunction, effectFunction = rejectedEffectFunction ) => 
+    Task(( reject, resolve ) =>
+      fork( 
+        rejectedValue => 
+          ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue ))
+        , value => 
+          ( effectFunction( value ), resolve( value ))));
 
   const fold = ( rejectedMap, map = rejectedMap ) => 
     Task(( _, resolve ) =>
@@ -36,6 +44,11 @@ function Task( fork ) {
       fork( rejectedValue => 
         rejectedMap( rejectedValue ).fork( reject, resolve )
       , resolve ));
+  
+  const rejectedEffect = rejectedEffectFunction => 
+    Task(( reject, resolve ) =>
+      fork( rejectedValue => 
+        ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue )), resolve ));
 
   const swap = () =>
     Task(( reject, resolve ) => 
@@ -111,18 +124,20 @@ function Task( fork ) {
   return { 
     isTask: true,
     map, 
-    bimap,
     rejectedMap,
-    swap,
-    fold,
+    effect,
+    rejectedEffect,
+    bimap,
+    biEffect,
+    chain,
     orElse: rejectedChain,
     rejectedChain,
-    chain,
+    fold,
+    swap,
     ap,
     concat: or,
     or,
     and,
-    effect,
     toString,
     fork,
   };
