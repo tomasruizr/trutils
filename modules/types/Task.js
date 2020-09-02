@@ -14,6 +14,13 @@ function Task( fork ) {
       fork( reject, chainValue => 
         Task.ensureTask( chainFunction( chainValue ))
           .fork( reject, resolve )));
+
+  const rejectedChain = rejectedMap =>
+    Task(( reject, resolve ) => 
+      fork( rejectedValue => 
+        Task.ensureTask( rejectedMap( rejectedValue ))
+          .fork( reject, resolve )
+      , resolve ));
   
   const bimap = ( rejectedMap, map = rejectedMap ) => 
     Task(( reject, resolve ) =>
@@ -39,12 +46,6 @@ function Task( fork ) {
         reject( rejectedMap( rejectedValue ))
       , resolve ));
  
-  const rejectedChain = rejectedMap =>
-    Task(( reject, resolve ) => 
-      fork( rejectedValue => 
-        rejectedMap( rejectedValue ).fork( reject, resolve )
-      , resolve ));
-  
   const rejectedEffect = rejectedEffectFunction => 
     Task(( reject, resolve ) =>
       fork( rejectedValue => 
