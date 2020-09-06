@@ -1,158 +1,144 @@
 function Task( fork ) {
-  const map = ( mapFunction ) =>
-    Task(( reject, resolve ) =>
-      fork( reject, mapValue =>
-        resolve( mapFunction( mapValue ))));
-
-  const effect = effectFunction => 
-    Task(( reject, resolve ) =>
-      fork( reject, value => 
-        ( effectFunction( value ), resolve( value ))));
-  
-  const chain = ( chainFunction ) =>
-    Task(( reject, resolve ) =>
-      fork( reject, chainValue => 
-        Task.ensureTask( chainFunction( chainValue ))
-          .fork( reject, resolve )));
-
-  const rejectedChain = rejectedMap =>
-    Task(( reject, resolve ) => 
-      fork( rejectedValue => 
-        Task.ensureTask( rejectedMap( rejectedValue ))
-          .fork( reject, resolve )
-      , resolve ));
-  
-  const bimap = ( rejectedMap, map = rejectedMap ) => 
-    Task(( reject, resolve ) =>
-      fork( rejectedValue => reject( rejectedMap( rejectedValue ))
-        , value => resolve( map( value ))));
-
-  const biEffect = ( rejectedEffectFunction, effectFunction = rejectedEffectFunction ) => 
-    Task(( reject, resolve ) =>
-      fork( 
-        rejectedValue => 
-          ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue ))
-        , value => 
-          ( effectFunction( value ), resolve( value ))));
-
-  const fold = ( rejectedMap, map = rejectedMap ) => 
-    Task(( _, resolve ) =>
-      fork( rejectedValue => resolve( rejectedMap( rejectedValue ))
-        , value => resolve( map( value ))));
-      
-  const rejectedMap = rejectedMap =>
-    Task(( reject, resolve ) => 
-      fork( rejectedValue => 
-        reject( rejectedMap( rejectedValue ))
-      , resolve ));
- 
-  const rejectedEffect = rejectedEffectFunction => 
-    Task(( reject, resolve ) =>
-      fork( rejectedValue => 
-        ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue )), resolve ));
-
-  const swap = () =>
-    Task(( reject, resolve ) => 
-      fork( resolve , reject ));
-
-  const ap = ( that ) => {
-    return Task( function( reject, resolve ) {
-      let theFunction;
-      let value;
-      let isValueSet;
-      let isRejected = false;
-      const guardResolve = setter => item => {
-        if ( isRejected ) return;
-        setter( item );
-        if ( theFunction != null && isValueSet ) {
-          return resolve( theFunction( value ));
-        } else {
-          return item;
-        }
-      };
-      const guardReject = x => {
-        if ( !isRejected ) {
-          isRejected = true;
-          return reject( x );
-        }
-      };
-      fork( guardReject, guardResolve( func => theFunction = func ));
-      that.fork( guardReject, guardResolve( val => {
-        value = val; 
-        isValueSet = true;
-      }));
-    });
-  };
-  
-
-  const or = ( that ) => {
-    return Task(( reject, resolve ) => {
-      let isDone = false;
-      const guard = theFunction => value => {
-        if ( isDone ) return;
-        isDone = true;
-        return theFunction( value );
-      };
-      fork( guard( reject ), guard( resolve ));
-      that.fork( guard( reject ), guard( resolve ));
-    });
-  };
-
-  
-  const and = ( that ) => { 
-    let resolved = false;
-    let rejected = false;
-    const result = [];
-    const pending = ([ first, second ] = result ) =>
-      first === undefined || second === undefined;
-    const guard = ( rej, res, i ) => [ 
-      e => resolved || rejected
-        ? undefined
-        : ( rejected = true , rej ( e )),
-      x => ( result[i] = x || [], resolved || rejected || pending ()
-        ? undefined
-        : ( resolved = true , res( result.flatMap( x=>x )))),
-    ];
-    return Task (( reject, resolve ) => ( 
-      fork( ...guard( reject, resolve, 0 )),
-      that.fork( ...guard( reject, resolve, 1 ))
-    ));
-  };
-
-  const toString = () => `Task(${fork})`;
-
-      
-  return { 
-    isTask: true,
-    map, 
-    rejectedMap,
-    effect,
-    rejectedEffect,
-    bimap,
-    biEffect,
-    chain,
-    orElse: rejectedChain,
-    rejectedChain,
-    fold,
-    swap,
-    ap,
-    concat: or,
-    or,
-    and,
-    toString,
-    fork,
-  };
+  this.fork = fork;
 }
 
-Task.of = Task.empty = taskValue => Task(( _, resolve ) => resolve( taskValue ));
+Task.prototype.isTask = true;
 
-Task.rejected = function _rejected( rejectedValue ) {
-  return new Task( function( reject ) {
-    return reject( rejectedValue );
+Task.prototype.map = function ( mapFunction ) {
+  return new Task(( reject, resolve ) =>
+    this.fork( reject, mapValue =>
+      resolve( mapFunction( mapValue ))));
+};
+
+Task.prototype.effect = function ( effectFunction ) {
+  return new Task(( reject, resolve ) =>
+    this.fork( reject, value => 
+      ( effectFunction( value ), resolve( value ))));
+};
+
+Task.prototype.chain = function ( chainFunction ) {
+  return new Task(( reject, resolve ) =>
+    this.fork( reject, chainValue => 
+      Task.ensureTask( chainFunction( chainValue ))
+        .fork( reject, resolve )));
+};
+
+Task.prototype.rejectedChain = Task.prototype.orElse = function ( rejectedMap ){
+  return new Task(( reject, resolve ) => 
+    this.fork( rejectedValue => 
+      Task.ensureTask( rejectedMap( rejectedValue ))
+        .fork( reject, resolve )
+    , resolve ));
+};
+
+Task.prototype.bimap = function ( rejectedMap, map = rejectedMap ){ 
+  return new Task(( reject, resolve ) =>
+    this.fork( rejectedValue => reject( rejectedMap( rejectedValue ))
+      , value => resolve( map( value ))));
+};
+
+Task.prototype.biEffect = function( rejectedEffectFunction, effectFunction = rejectedEffectFunction ){
+  return new Task(( reject, resolve ) =>
+    this.fork( 
+      rejectedValue => 
+        ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue ))
+      , value => 
+        ( effectFunction( value ), resolve( value ))));
+};
+
+Task.prototype.fold = function( rejectedMap, map = rejectedMap ){ 
+  return new Task(( _, resolve ) =>
+    this.fork( rejectedValue => resolve( rejectedMap( rejectedValue ))
+      , value => resolve( map( value ))));
+};
+
+Task.prototype.rejectedMap = function( rejectedMap ){
+  return new Task(( reject, resolve ) => 
+    this.fork( rejectedValue => 
+      reject( rejectedMap( rejectedValue ))
+    , resolve ));
+};
+
+Task.prototype.rejectedEffect = function( rejectedEffectFunction ){ 
+  return new Task(( reject, resolve ) =>
+    this.fork( rejectedValue => 
+      ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue )), resolve ));
+};
+
+Task.prototype.swap = function(){
+  return new Task(( reject, resolve ) => 
+    this.fork( resolve , reject ));
+};
+
+Task.prototype.ap = function( that ){ 
+  return new Task(( reject, resolve ) => {
+    let theFunction;
+    let value;
+    let isValueSet;
+    let isRejected = false;
+    const guardResolve = setter => item => {
+      if ( isRejected ) return;
+      setter( item );
+      if ( theFunction != null && isValueSet ) {
+        return resolve( theFunction( value ));
+      } else {
+        return item;
+      }
+    };
+    const guardReject = x => {
+      if ( !isRejected ) {
+        isRejected = true;
+        return reject( x );
+      }
+    };
+    this.fork( guardReject, guardResolve( func => theFunction = func ));
+    that.fork( guardReject, guardResolve( val => {
+      value = val; 
+      isValueSet = true;
+    }));
   });
 };
 
-Task.ensureTask = ( maybeTask ) => {
+Task.prototype.or = function( that ){
+  return new Task(( reject, resolve ) => {
+    let isDone = false;
+    const guard = theFunction => value => {
+      if ( isDone ) return;
+      isDone = true;
+      return theFunction( value );
+    };
+    this.fork( guard( reject ), guard( resolve ));
+    that.fork( guard( reject ), guard( resolve ));
+  });
+};
+
+Task.prototype.and = Task.prototype.concat = function( that ) { 
+  let resolved = false;
+  let rejected = false;
+  const result = [];
+  const pending = ([ first, second ] = result ) =>
+    first === undefined || second === undefined;
+  const guard = ( rej, res, i ) => [ 
+    e => resolved || rejected
+      ? undefined
+      : ( rejected = true , rej ( e )),
+    x => ( result[i] = x || [], resolved || rejected || pending ()
+      ? undefined
+      : ( resolved = true , res( result.flatMap( x=>x )))),
+  ];
+  return new Task(( reject, resolve ) => ( 
+    this.fork( ...guard( reject, resolve, 0 )),
+    that.fork( ...guard( reject, resolve, 1 ))
+  ));
+};
+
+Task.prototype.toString = () => `Task(${this.fork})`;
+
+Task.of = Task.empty = taskValue => new Task(( _, resolve ) => resolve( taskValue ));
+
+Task.rejected = rejectedValue => new Task( reject => reject( rejectedValue ));
+
+Task.ensureTask = maybeTask => {
   if ( maybeTask == null ) return Task.of();
   return maybeTask.isTask ? maybeTask : Task.fromPromise( maybeTask );
 };
@@ -176,7 +162,7 @@ Task.and = ( task1, task2 ) => {
       ? undefined
       : ( resolved = true , res ( result ))),
   ];
-  return Task (( rej, res ) => ( 
+  return new Task (( rej, res ) => ( 
     task1.fork ( ...guard ( rej, res, 0 )),
     task2.fork ( ...guard ( rej, res, 1 ))
   ));

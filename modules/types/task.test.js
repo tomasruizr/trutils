@@ -4,7 +4,8 @@ const sinon = require( 'sinon' );
 
 describe( 'Task', function() {
   const failSafe = () => assert( false );
-  describe( 'Static properties', function() {
+  
+  it( 'Holds Static properties', function() {
     assert.exists( Task.of );
     assert.exists( Task.rejected );
     assert.exists( Task.isTask );
@@ -14,11 +15,11 @@ describe( 'Task', function() {
 
   describe( 'Task', function() {
     it( 'returns a Task for non async operation', () => {
-      const x = Task(( _, resolve ) => resolve( 'str' ));
+      const x = new Task(( _, resolve ) => resolve( 'str' ));
       x.fork( failSafe, str => assert.equal( str, 'str' ));
     });
     it( 'returns a Task for async operation', done => {
-      const x = Task(( _, resolve ) => setTimeout(() => resolve( 'str' ), 10 ));
+      const x = new Task(( _, resolve ) => setTimeout(() => resolve( 'str' ), 10 ));
       x.fork( failSafe, str => {
         assert.equal( str, 'str' );
         done();
@@ -29,7 +30,7 @@ describe( 'Task', function() {
   describe( 'of', function() {
     it( 'returns an object with isTask === true', () => {
       const x = Task.of();
-      assert.isTrue( x.isTask );
+      assert.isTrue( Task.isTask( x ));
     });
     it( 'returns an object with possible operations', () => {
       const x = Task.of();
@@ -67,8 +68,8 @@ describe( 'Task', function() {
   describe( 'and', function() {
     it( 'executes two async operations and returns an array with the results', done => {
       Task.and( 
-        Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )),
-        Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 10 ))
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )),
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 10 ))
       )
         .map( x=> { 
           assert.deepEqual( x, [ 1,2 ]);
@@ -81,11 +82,11 @@ describe( 'Task', function() {
   describe( 'all', function() {
     it( 'executes two async operations and returns an array with the results', done => {
       Task.all( 
-        Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )),
-        Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 8 )),
-        Task(( _, resolve ) => setTimeout(() => { resolve( 3 ); }, 10 )),
-        Task(( _, resolve ) => setTimeout(() => { resolve( 4 ); }, 1 )),
-        Task(( _, resolve ) => setTimeout(() => { resolve( 5 ); }, 5 ))
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )),
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 8 )),
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 3 ); }, 10 )),
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 4 ); }, 1 )),
+        new Task(( _, resolve ) => setTimeout(() => { resolve( 5 ); }, 5 ))
       )
         .map( x => {
           assert.deepEqual( x, [ 1,2,3,4,5 ]);
@@ -228,8 +229,17 @@ describe( 'Task', function() {
   });
 
   describe( 'task.ap', function() {
+    it( 'resolves two Tasks applied to another task', done => {
+      Task.of( one => two => `${one}-${two}` )
+        .ap( Task.of( 'hola' ))
+        .ap( Task.of( 'pana' ))
+        .map( data => {
+          assert.equal( data, 'hola-pana' );
+        })
+        .fork( done, () => done());
+    });
     it( 'rejects if one of the ap functions rejects', () => {
-      Task.of( one=>two => `${one}-${two}` )
+      Task.of( one => two => `${one}-${two}` )
         .ap( Task.of( 'hola' ))
         .ap( Task.rejected( 'pana' ))
         .fork( err => assert.equal( err, 'pana' ), failSafe );
@@ -238,8 +248,8 @@ describe( 'Task', function() {
       Task.of( 'mio' )
         .map( str => str.toUpperCase())
         .map( a => b => c => a + b + c )
-        .ap( Task(( _, resolve ) => setTimeout(() => resolve( 'hola' )), 5 ))
-        .ap( Task(( _, resolve ) => setTimeout(() => resolve( 'pana' )), 5 ))
+        .ap( new Task(( _, resolve ) => setTimeout(() => resolve( 'hola' )), 5 ))
+        .ap( new Task(( _, resolve ) => setTimeout(() => resolve( 'pana' )), 5 ))
         .fork( failSafe, str => {
           assert.equal( str, 'MIOholapana' );
         });
@@ -247,23 +257,34 @@ describe( 'Task', function() {
     it( 'works for several async ops', done => {
       const spy = sinon.spy();
       Task.of(() => () => 'listo' )
-        .ap( new Task(( rej, resolve )=> setTimeout(() => { spy(); resolve(); }, 200 )))
-        .ap( new Task(( rej, resolve )=> setTimeout(() => { spy(); resolve(); }, 100 )))
+        .ap( new Task(( _, resolve )=> setTimeout(() => { spy(); resolve(); }, 200 )))
+        .ap( new Task(( _, resolve )=> setTimeout(() => { spy(); resolve(); }, 100 )))
         .map( str => {
           assert.equal( str, 'listo' );
           assert.equal( spy.callCount, 2 );
         })
         .fork( done, () => done());
     });
+    it( 'rejects for several async ops', done => {
+      const spy = sinon.spy();
+      Task.of(() => () => 'listo' )
+        .ap( new Task(( reject )=> setTimeout(() => { spy(); reject( 'rejectedValue' ); }, 200 )))
+        .ap( new Task(( _, resolve )=> setTimeout(() => { spy(); resolve(); }, 100 )))
+        .rejectedMap( str => {
+          assert.equal( str, 'rejectedValue' );
+          assert.equal( spy.callCount, 2 );
+        })
+        .fork(() => done(), done );
+    });
   });
 
   describe( 'task.and', function() {
     it( 'executes several async operations and returns an array with the results', done => {
       Task.of()
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )))
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 8 )))
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 3 ); }, 6 )))
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 4 ); }, 3 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 8 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 3 ); }, 6 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 4 ); }, 3 )))
         .map( x=> { 
           assert.deepEqual( x, [ 1,2,3,4 ]);
         }) 
@@ -271,10 +292,10 @@ describe( 'Task', function() {
     });
     it( 'executes several async operations and returns an array with the results', done => {
       Task.of( 'someThing' )
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )))
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 8 )))
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 3 ); }, 6 )))
-        .and( Task(( _, resolve ) => setTimeout(() => { resolve( 4 ); }, 3 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 1 ); }, 10 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 2 ); }, 8 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 3 ); }, 6 )))
+        .and( new Task(( _, resolve ) => setTimeout(() => { resolve( 4 ); }, 3 )))
         .map( x=> { 
           assert.deepEqual( x, [ 'someThing', 1,2,3,4 ]);
         }) 
