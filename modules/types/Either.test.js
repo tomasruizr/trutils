@@ -1,5 +1,17 @@
 const { I, True } = require( '../functions.js' );
-const { of, Left, Right, fromNullable, fromFalseable, fromValidation, fromValidations, fromOptions, isEither, all, any } = require( './Either.js' );
+const { 
+  of,
+  Left,
+  Right,
+  fromNullable,
+  fromFalseable,
+  fromValidation,
+  fromValidations,
+  fromAllValidations,
+  fromOptions,
+  isEither,
+  all,
+  any } = require( './Either.js' );
 const Box = require( './Box.js' );
 const { assert } = require( 'chai' );
 const sinon = require( 'sinon' );
@@ -224,9 +236,9 @@ describe( 'Either', function() {
     });
   });
   
-  describe( 'fromValidations', function() {
+  describe( 'fromAllValidations', function() {
     it( 'returns a right in case all validations are true', ()=>{
-      const e = fromValidations([
+      const e = fromAllValidations([
         [n => n > 1],
         [n => n < 3],
         [n => n === 2]
@@ -234,7 +246,7 @@ describe( 'Either', function() {
       assert.deepEqual( e.fold( null, I ), Right( 2 ).fold( null, I ));
     });
     it( 'returns a Left in case validation is false', ()=>{
-      const e = fromValidations([
+      const e = fromAllValidations([
         [ n => n > 1, '' ],
         [ n => n < 3, '' ],
         [ n => n === 2, '' ],
@@ -261,6 +273,26 @@ describe( 'Either', function() {
         [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
       ]);
       x( 'bla' ).fold( assert.isNull );
+    });
+  });
+  
+  describe( 'fromValidations', function() {
+    it( 'returns a Right with the value in case condition is true', () => {
+      const x = fromValidations([
+        [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
+        [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
+        [ True, str=> `solo es, ${str}` ],
+      ]);
+      x( 'algo' ).fold(( str ) => assert.equal( 'la cadena tiene algo, algo', str ));
+      x( 'nada' ).fold(( str ) => assert.equal( 'la cadena tiene nada, nada', str ));
+      x( 'a' ).fold(( str ) => assert.equal( 'solo es, a', str ));
+    });
+    it( 'returns a left in case condition is not true', () => {
+      const x = fromValidations([
+        [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
+        [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
+      ]);
+      x( 'bla' ).fold( assertError, x=> assert.equal( x, 'bla' ));
     });
   });
 

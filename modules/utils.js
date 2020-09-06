@@ -18,11 +18,23 @@ const cor = curry(( fns, params ) =>
 
 const eitherToTask = e => e.fold( Task.rejected, ensureTask );
 
-const fromNullableToTask = value => Either.fromNullable( value ).fold( Task.rejected, ensureTask );
+const fromNullableToTask = value => new Task(( reject, resolve ) => Either.fromNullable( value ).fold( reject, resolve ));
 
-const fromFalseableToTask = value => Either.fromFalseable( value ).fold(() => Task.rejected( value ), () => ensureTask( value ));
+const fromFalseableToTask = value => new Task(( reject, resolve ) => Either.fromFalseable( value ).fold( reject, resolve )); 
 
-const fromValidationToTask = condition => value => Either.fromValidation( condition )( value ).fold(() => Task.rejected( value ), () => ensureTask( value ));
+const fromValidationToTask = condition => value => new Task(( reject, resolve ) => Either.fromValidation( condition )( value ).fold( reject, resolve )); 
+
+const fromAllValidationsToTask = curry(( conditionsOrFunctions, subject ) => new Task(( reject, resolve ) =>
+  Either.fromAllValidations( conditionsOrFunctions, subject ).fold( reject, resolve )
+));
+
+const fromValidationsToTask = curry(( conditionsOrFunctions, subject ) => new Task(( reject, resolve ) =>
+  Either.fromValidations( conditionsOrFunctions, subject ).fold( reject, resolve )
+));
+
+const fromOptionsToTask = curry(( conditionsOrFunctions, subject ) => new Task(( reject, resolve ) =>
+  Either.fromOptions( conditionsOrFunctions, subject ).fold( reject, resolve )
+));
 
 const ensureTask = ( maybeTask ) => {
   if ( !maybeTask ) return Task.of();
@@ -36,6 +48,9 @@ module.exports = {
   fromNullableToTask,
   fromFalseableToTask,
   fromValidationToTask,
+  fromValidationsToTask,
+  fromAllValidationsToTask,
+  fromOptionsToTask,
   ensureTask,
   cor
 };

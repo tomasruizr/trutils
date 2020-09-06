@@ -1,4 +1,4 @@
-const { I, noop, isError } = require( './functions.js' );
+const { I, noop, isError, True } = require( './functions.js' );
 const Task = require( './types/Task.js' );
 const Either = require( './types/Either.js' );
 const { assert } = require( 'chai' );
@@ -10,6 +10,8 @@ const {
   fromNullableToTask,
   fromFalseableToTask,
   fromValidationToTask,
+  fromAllValidationsToTask,
+  fromOptionsToTask,
   ensureTask } = require( './utils.js' );
 
 const failTest = ( message ) => assert( false, message );
@@ -270,23 +272,70 @@ describe( 'utils', function() {
   });
 
   describe( 'fromValidationToTask', function() {
-    it( 'returns rejected task of condition', () => {
+    it( 'returns rejected task of condition', done => {
       assert.isTrue( Task.isTask( fromValidationToTask( arr=>arr.length )([])));
       fromValidationToTask( arr=>arr.length )([]).fork(() => assert( true ), I );
+      Task.rejected()
+        .chain( fromValidationToTask )
+        .fork( done, () => done( 'Should not be here' ));
     });
-    it( 'returns task of anything', () => {
+    it( 'returns task of anything', done => {
       assert.isTrue( Task.isTask( fromValidationToTask( arr=>arr.length )(['hola'])));
       fromValidationToTask( arr=>arr.length )(['hola']).fork( I, () => assert( true ));
       Task.of( true )
         .chain( fromValidationToTask )
-        .rejectedMap(() => assert( false ))
-        .fork( I, () => assert( true ));
+        .fork( done, () => done());
     });
     it( 'works on map chaining', () => {
       const test = ( num ) => Task.of( num )
         .chain( fromValidationToTask( x=>x < 10 ));
       test( 20 ).fork( I, failTest );
       test( 5 ).fork( failTest, I );
+    });
+  });
+  describe( 'fromAllValidationsToTask', function() {
+    it( 'returns a right in case all validations are true', done=>{
+      fromAllValidationsToTask([
+        [n => n > 1],
+        [n => n < 3],
+        [n => n === 2]
+      ])( 2 )
+        .map( result => {
+          assert.equal( result, 2 );
+        })
+        .fork( done, () => done());
+    });
+    it( 'returns a Left in case validation is false', done =>{
+      fromAllValidationsToTask([
+        [ n => n > 1, '' ],
+        [ n => n < 3, '' ],
+        [ n => n === 2, '' ],
+        [ n => n === 3, 'El numero es invalido' ],
+      ])( 2 ).rejectedMap( result => {
+        assert.deepEqual( result, ['El numero es invalido']);
+      })
+        .fork( done, () => done());
+    });
+  });
+  
+  describe( 'fromOptionsToTask', function() {
+    const assertError = () => assert( false );
+    it( 'returns a Ok with the value in case condition is true', () => {
+      const x = fromOptionsToTask([
+        [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
+        [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
+        [ True, str=> `solo es, ${str}` ],
+      ]);
+      x( 'algo' ).fork( assertError, ( str ) => assert.equal( 'la cadena tiene algo, algo', str ));
+      x( 'nada' ).fork( assertError, ( str ) => assert.equal( 'la cadena tiene nada, nada', str ));
+      x( 'a' ).fork( assertError, ( str ) => assert.equal( 'solo es, a', str ));
+    });
+    it( 'returns a rejected in case condition is not true', () => {
+      const x = fromOptionsToTask([
+        [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
+        [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
+      ]);
+      x( 'bla' ).fork( assert.isNull );
     });
   });
 

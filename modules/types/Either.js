@@ -46,7 +46,7 @@ const fromValidation = curry(( conditionOrFunction, onFalse = I, onTrue = I, sub
   return data ? Right( onTrue( subject )) : Left( onFalse( subject ));
 }, 3 );
 
-const fromValidations = curry(( conditionsOrFunctions, subject ) => {
+const fromAllValidations = curry(( conditionsOrFunctions, subject ) => {
   const errors = conditionsOrFunctions.reduce(( acc, conditionOrFunction ) => {
     const data = isFunction( conditionOrFunction[0]) ? conditionOrFunction[0]( subject ) : conditionOrFunction[0];
     !data && acc.push( conditionOrFunction[1]);
@@ -54,6 +54,12 @@ const fromValidations = curry(( conditionsOrFunctions, subject ) => {
   },[]);
   return errors.length ? Left( errors ) : Right( subject );
 });
+
+const fromValidations = curry(( conditionsOrFunctions, subject ) =>
+  findAndPerform( fns => 
+    fromFalseable( fns[0]( subject ))
+      .fold( False, () => Left( fns[1]( subject )))
+  , conditionsOrFunctions ) || Right( subject ));
 
 const fromOptions = curry(( conditionsOrFunctions, subject ) =>
   findAndPerform( fns => 
@@ -88,6 +94,7 @@ module.exports = {
   fromOptions,
   fromValidation,
   fromValidations,
+  fromAllValidations,
   tryCatch,
   isEither,
   of: Right,
