@@ -10,10 +10,17 @@ Task.prototype.map = function ( mapFunction ) {
       resolve( mapFunction( mapValue ))));
 };
 
-Task.prototype.effect = function ( effectFunction ) {
+Task.prototype.rejectedMap = function( rejectedMap ){
+  return new Task(( reject, resolve ) => 
+    this.fork( rejectedValue => 
+      reject( rejectedMap( rejectedValue ))
+    , resolve ));
+};
+
+Task.prototype.bimap = function ( rejectedMap, map = rejectedMap ){ 
   return new Task(( reject, resolve ) =>
-    this.fork( reject, value => 
-      ( effectFunction( value ), resolve( value ))));
+    this.fork( rejectedValue => reject( rejectedMap( rejectedValue ))
+      , value => resolve( map( value ))));
 };
 
 Task.prototype.chain = function ( chainFunction ) {
@@ -31,13 +38,29 @@ Task.prototype.rejectedChain = Task.prototype.orElse = function ( rejectedMap ){
     , resolve ));
 };
 
-Task.prototype.bimap = function ( rejectedMap, map = rejectedMap ){ 
+Task.prototype.bichain = function ( rejectedMap, map = rejectedMap ){ 
   return new Task(( reject, resolve ) =>
-    this.fork( rejectedValue => reject( rejectedMap( rejectedValue ))
-      , value => resolve( map( value ))));
+    this.fork( rejectedValue => 
+      Task.ensureTask( rejectedMap( rejectedValue ))
+        .fork( reject, resolve )
+    , value => 
+      Task.ensureTask( map( value ))
+        .fork( reject, resolve )));
 };
 
-Task.prototype.biEffect = function( rejectedEffectFunction, effectFunction = rejectedEffectFunction ){
+Task.prototype.effect = function ( effectFunction ) {
+  return new Task(( reject, resolve ) =>
+    this.fork( reject, value => 
+      ( effectFunction( value ), resolve( value ))));
+};
+
+Task.prototype.rejectedEffect = function( rejectedEffectFunction ){ 
+  return new Task(( reject, resolve ) =>
+    this.fork( rejectedValue => 
+      ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue )), resolve ));
+};
+
+Task.prototype.bieffect = function( rejectedEffectFunction, effectFunction = rejectedEffectFunction ){
   return new Task(( reject, resolve ) =>
     this.fork( 
       rejectedValue => 
@@ -50,19 +73,6 @@ Task.prototype.fold = function( rejectedMap, map = rejectedMap ){
   return new Task(( _, resolve ) =>
     this.fork( rejectedValue => resolve( rejectedMap( rejectedValue ))
       , value => resolve( map( value ))));
-};
-
-Task.prototype.rejectedMap = function( rejectedMap ){
-  return new Task(( reject, resolve ) => 
-    this.fork( rejectedValue => 
-      reject( rejectedMap( rejectedValue ))
-    , resolve ));
-};
-
-Task.prototype.rejectedEffect = function( rejectedEffectFunction ){ 
-  return new Task(( reject, resolve ) =>
-    this.fork( rejectedValue => 
-      ( rejectedEffectFunction( rejectedValue ), reject( rejectedValue )), resolve ));
 };
 
 Task.prototype.swap = function(){
