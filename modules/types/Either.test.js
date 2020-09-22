@@ -277,7 +277,7 @@ describe( 'Either', function() {
   });
   
   describe( 'fromValidations', function() {
-    it( 'returns a Right with the value in case condition is true', () => {
+    it( 'returns a Left with the value in case condition is true', () => {
       const x = fromValidations([
         [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
         [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
@@ -287,7 +287,7 @@ describe( 'Either', function() {
       x( 'nada' ).fold(( str ) => assert.equal( 'la cadena tiene nada, nada', str ));
       x( 'a' ).fold(( str ) => assert.equal( 'solo es, a', str ));
     });
-    it( 'returns a left in case condition is not true', () => {
+    it( 'returns a Right in case condition none of the conditions are true', () => {
       const x = fromValidations([
         [ ( str ) => /algo/.test( str ), str=> `la cadena tiene algo, ${str}` ],
         [ ( str ) => /nada/.test( str ), str=> `la cadena tiene nada, ${str}` ],
