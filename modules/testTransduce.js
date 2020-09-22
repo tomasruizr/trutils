@@ -1,9 +1,25 @@
-// const { assoc } = require( './objects.js' );
-const { I, isObject } = require( './functions.js' );
+const { assoc } = require( './objects.js' );
+const { I, isObject, isArray } = require( './functions.js' );
 
 //*******************************************
 // utils
 //*******************************************
+
+const init = obj => obj['@@transducer/init'] || obj.init;
+const step = obj => obj['@@transducer/step'] || obj.step;
+const value = obj => obj['@@transducer/value'] || obj.value;
+const result = obj => obj['@@transducer/result'] || obj.result;
+
+const StandardReducer = ( description ) => ({
+  'init': description.init || description['@@transducer/init'],
+  'step': description.step || description['@@transducer/step'],
+  'value': description.value || description['@@transducer/value'],
+  'result': description.result || description['@@transducer/result'],    
+  '@@transducer/init': description['@@transducer/init'] || description.init,
+  '@@transducer/step': description['@@transducer/step'] || description.step,
+  '@@transducer/value': description['@@transducer/value'] || description.value,
+  '@@transducer/result': description['@@transducer/result'] || description.result,
+});
 
 const Reduced = ( value ) => ({
   '@@transducer/reduced': true,
@@ -17,10 +33,14 @@ const ObjectIterator = obj => {
   let index = 0;
   return {
     next: () => {
-      index < keys.length ? ++index && {
-        value: [ keys[index], obj[keys[index]] ],
-        done: false
-      } : { done : true };
+      if ( index < keys.length ) {
+        const res = {
+          value: [ keys[index], obj[keys[index]] ],
+          done: false
+        };
+        index++;
+        return res;
+      } else return { done : true };
     }
   };
 };
@@ -31,75 +51,142 @@ const getIterator = ( collection ) => {
   throw new Error( `Transducers: No Iterator for collection: ${collection}` );
 };
 
-//*******************************************
-// Reducer types
-//*******************************************
-const MapReducer = ( fn, reducer ) => ({
-  '@@transducer/init': ( ...args ) => reducer['@@transducer/init']( ...args ),
-  '@@transducer/result': ( ...args ) => reducer['@@transducer/result']( ...args ),
-  '@@transducer/step': ( acc, curr ) => reducer['@@transducer/step']( acc, fn( curr )),
+const defaultReducerProps = reducer => ({
+  '@@transducer/init': ( ...args ) => init( reducer )( ...args ),
+  '@@transducer/result': ( ...args ) => result( reducer )( ...args )
 });
 
-const FilterReducer = ( predicate, reducer ) => ({
-  '@@transducer/init': ( ...args ) => reducer['@@transducer/init']( ...args ),
-  '@@transducer/result': ( ...args ) => reducer['@@transducer/result']( ...args ),
-  '@@transducer/step': ( acc, curr ) => predicate( curr ) && reducer['@@transducer/step']( acc, curr ),
-});
+//*******************************************
+// Transformers
+//*******************************************
 
-const ArrayReducer = ()=>({
+const ArrayReducer = ()=>StandardReducer({
   '@@transducer/init': ( ...args ) => [...args],
   '@@transducer/result': I,
   '@@transducer/step': ( array, value ) => { array.push( value ); return array ; },
 });
 
-// const ObjectReducer = ()=>({
-//   '@@transducer/init': ( args ) => args || {},
-//   '@@transducer/result': I,
-//   '@@transducer/step': ( object, value ) => 
-//     isArray( value ) && value.length === 2 ? assoc( ...value, object ) : Object.keys( value ).forEach( k=> assoc( k, value[k], object )),
-// });
+const ObjectReducer = ()=>StandardReducer({
+  '@@transducer/init': ( args ) => args || {},
+  '@@transducer/result': I,
+  '@@transducer/step': ( object, value ) => 
+    isArray( value ) && value.length === 2 ? assoc( ...value, object ) : Object.keys( value ).forEach( k=> assoc( k, value[k], object )),
+});
 
 //*******************************************
-// transformers
+// Reducer types
+//*******************************************
+const MapReducer = ( fn, reducer ) => StandardReducer({
+  ...defaultReducerProps( reducer ),
+  '@@transducer/step': ( acc, curr ) => step( reducer )( acc, fn( curr, acc )),
+});
+
+const FilterReducer = ( predicate, reducer ) => StandardReducer({
+  ...defaultReducerProps( reducer ),
+  '@@transducer/step': ( acc, curr ) => predicate( curr, acc ) ? step( reducer )( acc, curr ) : acc,
+});
+
+const WhileReducer = ( predicate, reducer ) => StandardReducer({
+  ...defaultReducerProps( reducer ),
+  '@@transducer/step': ( acc, curr ) => predicate( curr, acc ) ? step( reducer )( acc, curr ) : Reduced( acc )
+});
+
+const ReduceReducer = ( fn, initial, reducer ) => StandardReducer({
+  ...defaultReducerProps( reducer ),
+  '@@transducer/result': () => initial,
+  '@@transducer/step': ( acc, curr ) => {
+    initial = fn( initial, curr, acc );
+    return step( reducer )( acc, curr );
+  },
+});
+
+//*******************************************
+// operations
 //*******************************************
 const map = fn => reducer => MapReducer( fn, reducer );
+const reduce = ( fn, init ) => reducer => ReduceReducer( fn, init, reducer );
 const filter = predicate => reducer => FilterReducer( predicate, reducer );
+const dedupe = ( allValues = false, lastValue ) => reducer => FilterReducer(( value, acc ) => {
+  let notDuped;
+  if ( !allValues ){
+    notDuped = value !== lastValue;
+    lastValue = value;
+  } else {
+    notDuped = !( Array.isArray( acc ) ? acc : Object.values( acc )).includes( value );
+  } 
+  return notDuped;
+}, reducer );
+const take = ( count = Infinity ) => reducer => WhileReducer(() => {
+  return count-- > 0;
+}, reducer );
+const skip = ( count = 0 ) => reducer => FilterReducer(() => {
+  return count-- <= 0;
+}, reducer );
+const skipWhile = ( predicate, state = false ) => reducer => FilterReducer(( value, acc ) => {
+  if ( !state ) 
+    return state = !predicate( value, acc );
+  return true;
+}, reducer );
+const takeUntil = ( predicate ) => reducer => WhileReducer(( value, acc ) => {
+  return predicate( value, acc );
+}, reducer );
+
 
 // Functions
 const transduce = ( xf , reducer, initialValue, collection ) => {
-  if ( !initialValue ) initialValue = xf['@@transducer/init'](); 
   if ( !collection ) return ( coll ) => transduce( xf, reducer, initialValue, coll ); 
+  if ( !initialValue ) initialValue = ( init( xf ))(); 
   const transformedReducer = xf( reducer );
   let accumulation = initialValue;
   const iter = getIterator( collection );
   let val = iter.next();
   while( !val.done ) {
-    accumulation = transformedReducer['@@transducer/step']( accumulation, val.value );
+    accumulation = step( transformedReducer )( accumulation, val.value );
     if( isReduced( accumulation )) {
-      accumulation = accumulation['@@transducer/value'];
+      accumulation = value( accumulation );
       break;
     }
     val = iter.next();
   }
-  return transformedReducer['@@transducer/result']( accumulation );
+  return result( transformedReducer )( accumulation );
 };
 
-// TODO: Traer seq, into
-// TODO: Probar un transduce con stream
-// TODO: Hacer un Benchmark contra transducers.js
-// TODO: Asegurar que funciona contra immutable y que no se creen listas nuevas
+const into = ( to, xf, collection ) => {
+  if ( !collection ) return coll => into( to, xf, coll );
+  return transduce( xf, isArray( to ) ? ArrayReducer() : ObjectReducer(), to, collection );
+};
+
+const seq = ( xf, collection ) => {
+  if ( !collection ) return coll => seq( xf, coll );
+  return into( isArray( collection ) ? [] : {}, xf, collection );
+};
 
 //*******************************************
 // Public Interface
 //*******************************************
 
 module.exports = {
+  // Reducers
+  FilterReducer,
+  MapReducer,
+  ReduceReducer,
+  WhileReducer,
   // utils
+  StandardReducer,
+  defaultReducerProps,
   Reduced,
   isReduced,
-  // transformers
+  // operations
   map,
   filter,
+  reduce,
+  dedupe,
+  take,
+  skip,
+  takeUntil,
+  skipWhile,
   // functions
-  transduce
+  transduce,
+  into,
+  seq
 };
