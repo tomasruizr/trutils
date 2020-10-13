@@ -12,6 +12,8 @@ const Box = value => ({
   inspect: () => `Box(${value})`
 });
 
+Box.of = Box;
+
 Box.fromCondition = curry(( conditionOrFunction, onFalse = I, onTrue = I, subject ) => 
   Box( conditionOrFunction )
     .map( condition => isFunction( condition ) ? condition( subject ) : condition ) 
