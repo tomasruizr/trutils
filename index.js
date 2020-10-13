@@ -1,5 +1,5 @@
 module.exports = {
-  transducers: require( './modules/transducers.js' ),
+  transducers: require( './modules/testTransduce.js' ),
   ...require( './modules/benchmarks.js' ),
   ...require( './modules/creational.js' ),
   ...require( './modules/imperative.js' ),
