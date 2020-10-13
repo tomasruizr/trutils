@@ -1,9 +1,11 @@
 const t = require( './testTransduce.js' );
+const sinon = require( 'sinon' );
 const immutable = require( 'immutable' );
 const { 
   seq,
   into,
   map,
+  flatMap,
   filter,
   reduce,
   Reduced,
@@ -83,6 +85,35 @@ describe( 'transducers', function() {
     });
   });
   describe( 'Arrays', function() {
+    describe( 'flatMap', function() {
+      it( 'flats and map an array', () => {
+        const arr = [ 1,2, [ 3,4,5 ], 6,7,8,9 ];
+        const res = seq( flatMap( x => x * 2 ));
+        assert.isFunction( res );
+        const result = res( arr );
+        assert.deepEqual( result, [ 2, 4, 6, 8, 10, 12, 14, 16, 18 ]);
+      });
+      it( 'works with whileReducer after flatMap', () => {
+        const arr = [ 1,2, [ 3,4,5 ], 6,7,8,9 ];
+        const res = seq( compose( 
+          flatMap( x => x * 2 ),
+          takeUntil( x => x !== 8 )
+        ));
+        assert.isFunction( res );
+        const result = res( arr );
+        assert.deepEqual( result, [ 2, 4, 6 ]);
+      });
+      it( 'works with whileReducer before flatMap', () => {
+        const arr = [ 1,2, [ 3,4,5 ], 6,7,8,9 ];
+        const res = seq( compose( 
+          takeUntil( x => x !== 6 ),
+          flatMap( x => x * 2 ),
+        ));
+        assert.isFunction( res );
+        const result = res( arr );
+        assert.deepEqual( result, [ 2, 4, 6, 8, 10 ]);
+      });
+    });
     describe( 'seq', function() {
       it( 'accepts curring', () => {
         const arr = [...Array( 10 ).keys()];
@@ -189,10 +220,26 @@ describe( 'transducers', function() {
         assert.deepEqual( seq( compose( skip( 2 )), arr ), [ 2, 3, 4, 5, 6, 7, 8, 9 ]);
       });
     });
-    describe( 'takeWhile', function() {
+    describe( 'takeUntil', function() {
       it( 'takes from a stream of data while condition is true', () => {
-        const arr = [...Array( 10 ).keys()];
-        assert.deepEqual( seq( compose( takeUntil( v => v !== 4 )), arr ), [ 0, 1, 2, 3 ]);
+        const spy1 = sinon.spy();
+        const spy2 = sinon.spy();
+        const arr = [...Array( 100 ).keys()];
+        const fn = seq( compose( 
+          map( x=> { spy1(); return x ; }),
+          takeUntil( v => v !== 4 ),
+          map( x=> { spy2(); return x ; })
+        ));
+        const res = fn( arr );
+        assert.deepEqual( res, [ 0, 1, 2, 3 ]);
+        assert.equal( spy1.callCount, 5 );
+        assert.equal( spy2.callCount, 4 );
+        spy1.resetHistory();
+        spy2.resetHistory();
+        const res2 = fn([ 0,3,4,3,2,3,4,4 ]);
+        assert.deepEqual( res2, [ 0, 3 ]);
+        assert.equal( spy1.callCount, 3 );
+        assert.equal( spy2.callCount, 2 );
       });
     });
     describe( 'skipWhile', function() {

@@ -1,5 +1,5 @@
 const { assoc } = require( './objects.js' );
-const { I, isObject, isArray } = require( './functions.js' );
+const { I, isObject, isArray, ensureArray } = require( './functions.js' );
 
 //*******************************************
 // utils
@@ -81,6 +81,17 @@ const MapReducer = ( fn, reducer ) => StandardReducer({
   '@@transducer/step': ( acc, curr ) => step( reducer )( acc, fn( curr, acc )),
 });
 
+const FlatMapReducer = ( fn, reducer ) => StandardReducer({
+  ...defaultReducerProps( reducer ),
+  '@@transducer/step': ( acc, curr ) => {
+    for ( const c of ensureArray( curr )) {
+      const reduced = step( reducer )( acc, fn( c ));
+      if ( isReduced( reduced )) return reduced;
+    }
+    return acc;
+  },
+});
+
 const FilterReducer = ( predicate, reducer ) => StandardReducer({
   ...defaultReducerProps( reducer ),
   '@@transducer/step': ( acc, curr ) => predicate( curr, acc ) ? step( reducer )( acc, curr ) : acc,
@@ -104,8 +115,12 @@ const ReduceReducer = ( fn, initial, reducer ) => StandardReducer({
 // operations
 //*******************************************
 const map = fn => reducer => MapReducer( fn, reducer );
+const flatMap = fn => reducer => FlatMapReducer( fn, reducer );
 const reduce = ( fn, init ) => reducer => ReduceReducer( fn, init, reducer );
 const filter = predicate => reducer => FilterReducer( predicate, reducer );
+const take = ( count = Infinity ) => reducer => WhileReducer(() => count-- > 0, reducer );
+const skip = ( count = 0 ) => reducer => FilterReducer(() => count-- <= 0, reducer );
+const takeUntil = ( predicate ) => reducer => WhileReducer(( value, acc ) => predicate( value, acc ), reducer );
 const dedupe = ( allValues = false, lastValue ) => reducer => FilterReducer(( value, acc ) => {
   let notDuped;
   if ( !allValues ){
@@ -116,19 +131,10 @@ const dedupe = ( allValues = false, lastValue ) => reducer => FilterReducer(( va
   } 
   return notDuped;
 }, reducer );
-const take = ( count = Infinity ) => reducer => WhileReducer(() => {
-  return count-- > 0;
-}, reducer );
-const skip = ( count = 0 ) => reducer => FilterReducer(() => {
-  return count-- <= 0;
-}, reducer );
 const skipWhile = ( predicate, state = false ) => reducer => FilterReducer(( value, acc ) => {
   if ( !state ) 
     return state = !predicate( value, acc );
   return true;
-}, reducer );
-const takeUntil = ( predicate ) => reducer => WhileReducer(( value, acc ) => {
-  return predicate( value, acc );
 }, reducer );
 
 
@@ -178,6 +184,7 @@ module.exports = {
   isReduced,
   // operations
   map,
+  flatMap,
   filter,
   reduce,
   dedupe,
