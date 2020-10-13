@@ -59,6 +59,11 @@ const assoc = curry(( objectPath, nValue, obj ) => {
   return obj;
 });
 
+const dissoc = curry(( objectPath, obj ) => {
+  delete obj[objectPath];
+  return obj;
+});
+
 function assocPath( objectPath, nValue, obj ) {
   if ( !obj ) return obj => assocPath( objectPath, nValue, obj );
   const path = objectPath.slice( 0 );
@@ -69,6 +74,19 @@ function assocPath( objectPath, nValue, obj ) {
     return currentObject[part];
   }, obj );
   lastPart[lastPath] = nValue;
+  return obj;
+}
+
+function dissocPath( objectPath, obj ) {
+  if ( !obj ) return obj => dissocPath( objectPath, obj );
+  const path = objectPath.slice( 0 );
+  const lastPath = path.pop();
+  lastPath;
+  const lastPart = path.reduce(( currentObject, part ) => {
+    currentObject[part] = currentObject[part] || {};
+    return currentObject[part];
+  }, obj );
+  delete lastPart[lastPath];
   return obj;
 }
 
@@ -121,7 +139,9 @@ module.exports = {
   propPath,
   appendDeep,
   assoc,
+  dissoc,
   assocPath,
+  dissocPath,
   pick,
   has,
   hasPath,
