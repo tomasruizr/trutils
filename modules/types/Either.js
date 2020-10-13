@@ -11,7 +11,7 @@ const Right = x =>
     bimap: ( f, g = f ) => Right( g( x )),
     effect: ( f ) => ( f( x ), Right( x )), 
     leftMap: () => Right( x ),
-    fold: ( f, g ) => g( x ),
+    fold: ( f, g = f ) => g( x ),
     concat: o =>
       o.fold(() => Right( x ),
         y => Right( x.concat( y ))),
