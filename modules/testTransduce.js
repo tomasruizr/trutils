@@ -1,5 +1,5 @@
 const { assoc } = require( './objects.js' );
-const { I, isObject, isArray, ensureArray } = require( './functions.js' );
+const { I, isObject, isArray, ensureArray, curry } = require( './functions.js' );
 
 //*******************************************
 // utils
@@ -157,15 +157,15 @@ const transduce = ( xf , reducer, initialValue, collection ) => {
   return result( transformedReducer )( accumulation );
 };
 
-const into = ( to, xf, collection ) => {
+const into = curry(( to, xf, collection ) => {
   if ( !collection ) return coll => into( to, xf, coll );
   return transduce( xf, isArray( to ) ? ArrayReducer() : ObjectReducer(), to, collection );
-};
+});
 
-const seq = ( xf, collection ) => {
+const seq = curry(( xf, collection ) => {
   if ( !collection ) return coll => seq( xf, coll );
   return into( isArray( collection ) ? [] : {}, xf, collection );
-};
+});
 
 //*******************************************
 // Public Interface
