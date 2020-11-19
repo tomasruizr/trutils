@@ -29,6 +29,8 @@ describe( 'Streams', function() {
     s( 10 );
     assert.equal( 10, s());
     assert.equal( 10, s());
+    s.val = 23;
+    assert.equal( 23, s());
   });
   it( 'maps over a streamed value', () => {
     const s = stream( 1 );
@@ -39,6 +41,15 @@ describe( 'Streams', function() {
     assert.equal( s(), 4 );
     assert.equal( s2(), 8 );
     assert.equal( s2(), 8 );
+  });
+  it( 'does not fires new value when hand setted', done => {
+    const s = stream();
+    s.map( val => {
+      assert( val, 1 );
+      done();
+    });
+    s( 1 );
+    // s.val = 1;
   });
   it( 'filters over a streamed value', () => {
     const isEven = num => num % 2 === 0;

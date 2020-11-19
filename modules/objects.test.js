@@ -129,6 +129,17 @@ describe( 'objects', function() {
       assert.notEqual( state.deep.arr, newState.deep.arr );
       assert.deepEqual( newState.deep.arr, [ 1, 3 ]);
     });
+    it( 'shouldDelete = false wont delete on undefined', () => {
+      const state = { prop: true, other: true, deep: { prop: 'foo' }};
+      const newState = mergeClone( state, {
+        prop: undefined,
+        deep: { prop: undefined },
+        fake: undefined, // deleting non existent key
+        other: null
+      }, false );
+      assert.deepEqual( state, { prop: true, other: true, deep: { prop: 'foo' }});
+      assert.deepEqual( newState, { prop: true, other: null, deep: { prop:'foo' }});
+    });
     it( 'function sub works', () => {
       const state = { age: 10, name: 'bob', obj: { prop: true }};
       const newState = mergeClone( state, {
@@ -243,6 +254,17 @@ describe( 'objects', function() {
       });
       assert.equal( newState, state );
       assert.deepEqual( state, { other: null, deep: {}});
+    });
+    it( 'shouldDelete = false wont delete on undefined', () => {
+      const state = { prop: true, other: true, deep: { prop: 'foo' }};
+      const newState = merge( state, {
+        prop: undefined,
+        deep: { prop: undefined },
+        fake: undefined, // deleting non existent key
+        other: null
+      }, false );
+      assert.equal( newState, state );
+      assert.deepEqual( state, { deep: { prop: 'foo' }, other: null, prop: true });
     });
     it( 'function sub works', () => {
       const state = { age: 10, name: 'bob', obj: { prop: true }};

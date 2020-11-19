@@ -1,3 +1,4 @@
+const { should } = require( 'chai' );
 const { isArray, isFunction, isObject, curry } = require( './functions.js' );
 const Either = require( './types/Either.js' );
 
@@ -17,33 +18,33 @@ const clone = obj => {
   return out;
 };
 
-const _merge = ( isArr, mergeAlgo, patch, data ) =>{
+const _merge = ( isArr, mergeAlgo, patch, data, shouldDelete = true ) =>{
   if ( patch && typeof patch === 'object' ) {
     if ( isArray( patch )) for ( const p of patch ) _merge( isArr, mergeAlgo, p, data );
     else {
       for ( const k of Object.keys( patch )) {
         const val = patch[k];
         if ( typeof val === 'function' ) data[k] = val( data[k], mergeAlgo );
-        else if ( val === undefined ) isArr && !isNaN( k ) ? data.splice( k, 1 ) : delete data[k];
+        else if ( val === undefined ) 
+          if ( !shouldDelete ) continue;
+          else isArr && !isNaN( k ) ? data.splice( k, 1 ) : delete data[k];
         else if ( val === null || !isObject( val ) || isArray( val )) data[k] = val;
-        else if ( typeof data[k] === 'object' ) data[k] = val === data[k] ? val : mergeAlgo( val, data[k]);
-        else data[k] = _merge( false, mergeAlgo, val, {});
+        else if ( typeof data[k] === 'object' ) data[k] = val === data[k] ? val : mergeAlgo( data[k], val, shouldDelete );
+        else data[k] = _merge( false, mergeAlgo, val, {}, shouldDelete );
       }
     }
   } else if ( isFunction( patch )) data = patch( data, mergeAlgo );
   return data;
 }; 
 
-const mergeClone = ( source, patch ) => {
-  if ( !source ) return source => mergeClone( patch, source );
+const mergeClone = ( source, patch, shouldDelete ) => {
   const isArr = isArray( source );
-  return _merge( isArr, mergeClone, patch, isArr ? source.slice() : ({ ...source }));
+  return _merge( isArr, mergeClone, patch, isArr ? source.slice() : ({ ...source }), shouldDelete );
 }; 
 
-const merge = ( source, patch ) => {
-  if ( !source ) return source => merge( patch, source );
+const merge = ( source, patch, shouldDelete ) => {
   const isArr = isArray( source );
-  return _merge( isArr, merge, patch, source );
+  return _merge( isArr, merge, patch, source, shouldDelete );
 };
 
 function prop( objectPath, obj ) {
