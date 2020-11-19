@@ -1,4 +1,3 @@
-const { should } = require( 'chai' );
 const { isArray, isFunction, isObject, curry } = require( './functions.js' );
 const Either = require( './types/Either.js' );
 
