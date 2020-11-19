@@ -41,7 +41,6 @@ function getReadOnly ( originalStream ){
 
 module.exports = {
   ...flyd,
-  reduce: flyd.scan,
   filter,
   dedupe: dropRepeats,
   once,

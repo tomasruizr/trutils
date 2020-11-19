@@ -33,12 +33,14 @@ const _merge = ( isArr, mergeAlgo, patch, data ) =>{
   } else if ( isFunction( patch )) data = patch( data, mergeAlgo );
   return data;
 }; 
-const mergeClone = ( patch, source ) => {
+
+const mergeClone = ( source, patch ) => {
   if ( !source ) return source => mergeClone( patch, source );
   const isArr = isArray( source );
   return _merge( isArr, mergeClone, patch, isArr ? source.slice() : ({ ...source }));
 }; 
-const merge = ( patch, source ) => {
+
+const merge = ( source, patch ) => {
   if ( !source ) return source => merge( patch, source );
   const isArr = isArray( source );
   return _merge( isArr, merge, patch, source );

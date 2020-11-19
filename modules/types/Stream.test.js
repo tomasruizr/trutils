@@ -6,7 +6,7 @@ const {
   stream,
   map,
   filter,
-  reduce,
+  scan,
   on,
   once,
   transduce,
@@ -53,7 +53,7 @@ describe( 'Streams', function() {
   });
   it( 'reduce over a streamed values', () => {
     const s = stream();
-    const reduced = reduce(( acc, curr ) => acc + curr, 0, s );
+    const reduced = scan(( acc, curr ) => acc + curr, 0, s );
     s( 1 )( 2 )( 4 )( 3 );
     assert.equal( reduced(), 10 );
   });
