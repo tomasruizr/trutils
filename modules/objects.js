@@ -36,14 +36,14 @@ const _merge = ( isArr, mergeAlgo, patch, data, shouldDelete = true ) =>{
   return data;
 }; 
 
-const mergeClone = ( source, patch, shouldDelete ) => {
-  const isArr = isArray( source );
-  return _merge( isArr, mergeClone, patch, isArr ? source.slice() : ({ ...source }), shouldDelete );
-}; 
-
 const merge = ( source, patch, shouldDelete ) => {
   const isArr = isArray( source );
-  return _merge( isArr, merge, patch, source, shouldDelete );
+  return _merge( isArr, merge, patch, isArr ? source.slice() : ({ ...source }), shouldDelete );
+}; 
+
+const mergeInPlace = ( source, patch, shouldDelete ) => {
+  const isArr = isArray( source );
+  return _merge( isArr, mergeInPlace, patch, source, shouldDelete );
 };
 
 function prop( objectPath, obj ) {
@@ -135,8 +135,8 @@ const appendDeep = curry(( path, value, list ) => {
 
 module.exports = {
   clone,
+  mergeInPlace,
   merge,
-  mergeClone,
   prop,
   propPath,
   appendDeep,

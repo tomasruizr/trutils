@@ -1,4 +1,4 @@
-const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeClone, fromPairs, appendDeep } = require( './objects.js' );
+const { omit, clone, pick, prop, assoc, propPath, assocPath, merge, mergeInPlace, fromPairs, appendDeep } = require( './objects.js' );
 const { assert } = require( 'chai' );
 
 describe( 'objects', function() {
@@ -110,10 +110,10 @@ describe( 'objects', function() {
       assert.deepEqual( obj, { a: { b: { c: 'hello', d: 5 }, d: { b: { d: 5 }}}});
     });
   });
-  describe( 'mergeClone', function() {
+  describe( 'merge', function() {
     it( 'deleting works', () => {
       const state = { prop: true, other: true, deep: { prop: 'foo' }};
-      const newState = mergeClone( state, {
+      const newState = merge( state, {
         prop: undefined,
         deep: { prop: undefined },
         fake: undefined, // deleting non existent key
@@ -124,14 +124,14 @@ describe( 'objects', function() {
     });
     it( 'deleting works with arrays', () => {
       const state = { foo: 'bar', deep: { arr: [ 1, 2, 3 ], prop: false }};
-      const newState = mergeClone( state, { deep: { arr: { 1: undefined }}});
+      const newState = merge( state, { deep: { arr: { 1: undefined }}});
       assert.notEqual( state.deep, newState.deep );
       assert.notEqual( state.deep.arr, newState.deep.arr );
       assert.deepEqual( newState.deep.arr, [ 1, 3 ]);
     });
     it( 'shouldDelete = false wont delete on undefined', () => {
       const state = { prop: true, other: true, deep: { prop: 'foo' }};
-      const newState = mergeClone( state, {
+      const newState = merge( state, {
         prop: undefined,
         deep: { prop: undefined },
         fake: undefined, // deleting non existent key
@@ -139,132 +139,6 @@ describe( 'objects', function() {
       }, false );
       assert.deepEqual( state, { prop: true, other: true, deep: { prop: 'foo' }});
       assert.deepEqual( newState, { prop: true, other: null, deep: { prop:'foo' }});
-    });
-    it( 'function sub works', () => {
-      const state = { age: 10, name: 'bob', obj: { prop: true }};
-      const newState = mergeClone( state, {
-        age: x => x * 10,
-        obj: () => ({ replaced: true }),
-        name: ( x, m ) => {
-          assert.equal( m, mergeClone ); // verify that merge is passed as second arg
-          return x;
-        }
-      });
-      assert.deepEqual( newState, { age: 100, name: 'bob', obj: { replaced: true }});
-      assert.deepEqual( state, { age: 10, name: 'bob', obj: { prop: true }});
-    });
-    it( 'deep function sub to uncreated object path', () => {
-      const state = { orig: true };
-      const newState = mergeClone( state, {
-        add: { stats: { count: x => ( x == null ? 1 : x + 1 ) }}
-      });
-      assert.deepEqual( newState, { orig: true, add: { stats: { count: 1 }}});
-      assert.deepEqual( state, { orig: true });
-    });
-    it( 'add nested object', () => {
-      const state = { age: 10 };
-      const add = { sub: true };
-      const newState = mergeClone( state, { add });
-      assert.deepEqual( newState, { age: 10, add: { sub: true }});
-      assert.notEqual( newState.add, add );
-      assert.notEqual( state, newState );
-    });
-    it( 'deep merge objects', () => {
-      const state = { age: 10, sub: { sub: { prop: true }}};
-      const newState = mergeClone({ sub: { sub: { newProp: true }}}, state );
-      assert.deepEqual( state, { age: 10, sub: { sub: { prop: true }}});
-      assert.deepEqual( newState, { age: 10, sub: { sub: { prop: true, newProp: true }}});
-      assert.notEqual( newState, state );
-      assert.notEqual( newState.sub, state.sub );
-      assert.notEqual( newState.sub.sub, state.sub.sub );
-    });
-    it( 'function patch', () => {
-      const state = { age: 10, foo: 'bar' };
-      const newState = mergeClone( state, ( s ) => {
-        assert.notEqual( s, state );
-        assert.deepEqual( s, state );
-        return mergeClone( s, { prop: true });
-      });
-      assert.deepEqual( newState, { age: 10, foo: 'bar', prop: true });
-    });
-    it( 'function patch that replaces', () => {
-      const state = { age: 10, foo: 'bar' };
-      const newState = mergeClone( state, ( s ) => {
-        assert.notEqual( s, state );
-        assert.deepEqual( s, state );
-        return { name:'tomas' };
-      });
-      assert.deepEqual( newState, { name:'tomas' });
-    });
-    it( 'returns original state if patch is no object, array or function', () => {
-      const state = { age: 10, foo: 'bar' };
-      let newState = mergeClone( state, 1 );
-      assert.deepEqual( newState, { age: 10, foo: 'bar' });
-      newState = mergeClone( state, undefined );
-      assert.deepEqual( newState, { age: 10, foo: 'bar' });
-      newState = mergeClone( state, null );
-      assert.deepEqual( newState, { age: 10, foo: 'bar' });
-      //TODO: this should be equal.
-      assert.notEqual( state, newState );
-    });
-    it( 'deep merge with arr', () => {
-      const state = { foo: 'bar', deep: { arr: [ 1, 2, 3 ], prop: false }};
-      const newState = mergeClone( state, { deep: { arr: { 1: 20 }}});
-      assert.notEqual( state.deep, newState.deep );
-      assert.notEqual( state.deep.arr, newState.deep.arr );
-      assert.deepEqual( newState.deep.arr, [ 1, 20, 3 ]);
-      assert.deepEqual( state.deep.arr, [ 1, 2, 3 ]);
-    });
-    it( 'top level SUB', () => {
-      const state = { age: 20, foo: 'bar' };
-      const replacement = { replaced: true };
-      const newState = mergeClone( state, () => replacement );
-      assert.notEqual( state, newState );
-      assert.equal( newState, replacement );
-    });
-    it( 'reuse object if same ref when patching', () => {
-      const state = { deep: { prop: true }};
-      const newState = mergeClone({ deep: state.deep }, state );
-      assert.notEqual( state, newState ); // TODO: maybe try and be smarter, to avoid copy if patch changes nothing
-      assert.equal( newState.deep, state.deep );
-    });
-    it( 'multi function patch, only copy once', () => {
-      const copies = [];
-      mergeClone({ key: 'value' }, Array.from({ length: 5 }, () => state => ( copies.push( state ), state )));
-      assert.equal( copies.length, 5 );
-      assert.equal( typeof copies[0], 'object' );
-      copies.every( copy => assert.equal( copy, copies[0]));
-    });
-    it( 'replace primitive with object and vice versa', () => {
-      const state = { count: 10, foo: { prop: true }};
-      const newState = mergeClone( state, { count: { prop: true }, foo: 10 });
-      assert.deepEqual( state, { count: 10, foo: { prop: true }});
-      assert.deepEqual( newState, { count: { prop: true }, foo: 10 });
-    });
-  });
-
-  describe( 'merge', function() {
-    it( 'deleting works', () => {
-      const state = { prop: true, other: true, deep: { prop: 'foo' }};
-      const newState = merge( state, {
-        prop: undefined,
-        deep: { prop: undefined },
-        fake: undefined, // deleting non existent key
-        other: null
-      });
-      assert.equal( newState, state );
-      assert.deepEqual( state, { other: null, deep: {}});
-    });
-    it( 'shouldDelete = false wont delete on undefined', () => {
-      const state = { prop: true, other: true, deep: { prop: 'foo' }};
-      const newState = merge( state, {
-        prop: undefined,
-        deep: { prop: undefined },
-        fake: undefined, // deleting non existent key
-        other: null
-      }, false );
-      assert.equal( newState, state );
-      assert.deepEqual( state, { deep: { prop: 'foo' }, other: null, prop: true });
     });
     it( 'function sub works', () => {
       const state = { age: 10, name: 'bob', obj: { prop: true }};
@@ -276,48 +150,70 @@ describe( 'objects', function() {
           return x;
         }
       });
-      assert.equal( newState, state );
-      assert.deepEqual( state, { age: 100, name: 'bob', obj: { replaced: true }});
-      assert.equal( newState, state );
+      assert.deepEqual( newState, { age: 100, name: 'bob', obj: { replaced: true }});
+      assert.deepEqual( state, { age: 10, name: 'bob', obj: { prop: true }});
     });
     it( 'deep function sub to uncreated object path', () => {
       const state = { orig: true };
       const newState = merge( state, {
         add: { stats: { count: x => ( x == null ? 1 : x + 1 ) }}
       });
-      assert.deepEqual( state, { orig: true, add: { stats: { count: 1 }}});
-      assert.equal( newState, state );
+      assert.deepEqual( newState, { orig: true, add: { stats: { count: 1 }}});
+      assert.deepEqual( state, { orig: true });
     });
     it( 'add nested object', () => {
       const state = { age: 10 };
       const add = { sub: true };
       const newState = merge( state, { add });
-      assert.deepEqual( state, { age: 10, add: { sub: true }});
+      assert.deepEqual( newState, { age: 10, add: { sub: true }});
       assert.notEqual( newState.add, add );
-      assert.equal( newState, state );
+      assert.notEqual( state, newState );
     });
     it( 'deep merge objects', () => {
       const state = { age: 10, sub: { sub: { prop: true }}};
-      const newState = merge( state, { sub: { sub: { newProp: true }}});
-      assert.deepEqual( state, { age: 10, sub: { sub: { prop: true, newProp: true }}});
-      assert.equal( newState, state );
-      assert.equal( newState.sub, state.sub );
-      assert.equal( newState.sub.sub, state.sub.sub );
+      const newState = merge({ sub: { sub: { newProp: true }}}, state );
+      assert.deepEqual( state, { age: 10, sub: { sub: { prop: true }}});
+      assert.deepEqual( newState, { age: 10, sub: { sub: { prop: true, newProp: true }}});
+      assert.notEqual( newState, state );
+      assert.notEqual( newState.sub, state.sub );
+      assert.notEqual( newState.sub.sub, state.sub.sub );
     });
     it( 'function patch', () => {
       const state = { age: 10, foo: 'bar' };
-      merge( state, ( s ) => {
-        assert.equal( s, state );
+      const newState = merge( state, ( s ) => {
+        assert.notEqual( s, state );
         assert.deepEqual( s, state );
         return merge( s, { prop: true });
       });
+      assert.deepEqual( newState, { age: 10, foo: 'bar', prop: true });
+    });
+    it( 'function patch that replaces', () => {
+      const state = { age: 10, foo: 'bar' };
+      const newState = merge( state, ( s ) => {
+        assert.notEqual( s, state );
+        assert.deepEqual( s, state );
+        return { name:'tomas' };
+      });
+      assert.deepEqual( newState, { name:'tomas' });
+    });
+    it( 'returns original state if patch is no object, array or function', () => {
+      const state = { age: 10, foo: 'bar' };
+      let newState = merge( state, 1 );
+      assert.deepEqual( newState, { age: 10, foo: 'bar' });
+      newState = merge( state, undefined );
+      assert.deepEqual( newState, { age: 10, foo: 'bar' });
+      newState = merge( state, null );
+      assert.deepEqual( newState, { age: 10, foo: 'bar' });
+      //TODO: this should be equal.
+      assert.notEqual( state, newState );
     });
     it( 'deep merge with arr', () => {
       const state = { foo: 'bar', deep: { arr: [ 1, 2, 3 ], prop: false }};
       const newState = merge( state, { deep: { arr: { 1: 20 }}});
-      assert.equal( state.deep, newState.deep );
-      assert.equal( state.deep.arr, newState.deep.arr );
-      assert.deepEqual( state.deep.arr, [ 1, 20, 3 ]);
+      assert.notEqual( state.deep, newState.deep );
+      assert.notEqual( state.deep.arr, newState.deep.arr );
+      assert.deepEqual( newState.deep.arr, [ 1, 20, 3 ]);
+      assert.deepEqual( state.deep.arr, [ 1, 2, 3 ]);
     });
     it( 'top level SUB', () => {
       const state = { age: 20, foo: 'bar' };
@@ -328,21 +224,125 @@ describe( 'objects', function() {
     });
     it( 'reuse object if same ref when patching', () => {
       const state = { deep: { prop: true }};
-      const newState = merge( state, { deep: state.deep });
-      assert.equal( state, newState ); // TODO: maybe try and be smarter, to avoid copy if patch changes nothing
+      const newState = merge({ deep: state.deep }, state );
+      assert.notEqual( state, newState ); // TODO: maybe try and be smarter, to avoid copy if patch changes nothing
       assert.equal( newState.deep, state.deep );
     });
     it( 'multi function patch, only copy once', () => {
       const copies = [];
-      const state = { key:'value' };
-      merge( state, Array.from({ length: 5 }, () => state => ( copies.push( state ), state )));
+      merge({ key: 'value' }, Array.from({ length: 5 }, () => state => ( copies.push( state ), state )));
       assert.equal( copies.length, 5 );
       assert.equal( typeof copies[0], 'object' );
       copies.every( copy => assert.equal( copy, copies[0]));
     });
     it( 'replace primitive with object and vice versa', () => {
       const state = { count: 10, foo: { prop: true }};
-      merge( state, { count: { prop: true }, foo: 10 });
+      const newState = merge( state, { count: { prop: true }, foo: 10 });
+      assert.deepEqual( state, { count: 10, foo: { prop: true }});
+      assert.deepEqual( newState, { count: { prop: true }, foo: 10 });
+    });
+  });
+
+  describe( 'merge', function() {
+    it( 'deleting works', () => {
+      const state = { prop: true, other: true, deep: { prop: 'foo' }};
+      const newState = mergeInPlace( state, {
+        prop: undefined,
+        deep: { prop: undefined },
+        fake: undefined, // deleting non existent key
+        other: null
+      });
+      assert.equal( newState, state );
+      assert.deepEqual( state, { other: null, deep: {}});
+    });
+    it( 'shouldDelete = false wont delete on undefined', () => {
+      const state = { prop: true, other: true, deep: { prop: 'foo' }};
+      const newState = mergeInPlace( state, {
+        prop: undefined,
+        deep: { prop: undefined },
+        fake: undefined, // deleting non existent key
+        other: null
+      }, false );
+      assert.equal( newState, state );
+      assert.deepEqual( state, { deep: { prop: 'foo' }, other: null, prop: true });
+    });
+    it( 'function sub works', () => {
+      const state = { age: 10, name: 'bob', obj: { prop: true }};
+      const newState = mergeInPlace( state, {
+        age: x => x * 10,
+        obj: () => ({ replaced: true }),
+        name: ( x, m ) => {
+          assert.equal( m, mergeInPlace ); // verify that merge is passed as second arg
+          return x;
+        }
+      });
+      assert.equal( newState, state );
+      assert.deepEqual( state, { age: 100, name: 'bob', obj: { replaced: true }});
+      assert.equal( newState, state );
+    });
+    it( 'deep function sub to uncreated object path', () => {
+      const state = { orig: true };
+      const newState = mergeInPlace( state, {
+        add: { stats: { count: x => ( x == null ? 1 : x + 1 ) }}
+      });
+      assert.deepEqual( state, { orig: true, add: { stats: { count: 1 }}});
+      assert.equal( newState, state );
+    });
+    it( 'add nested object', () => {
+      const state = { age: 10 };
+      const add = { sub: true };
+      const newState = mergeInPlace( state, { add });
+      assert.deepEqual( state, { age: 10, add: { sub: true }});
+      assert.notEqual( newState.add, add );
+      assert.equal( newState, state );
+    });
+    it( 'deep merge objects', () => {
+      const state = { age: 10, sub: { sub: { prop: true }}};
+      const newState = mergeInPlace( state, { sub: { sub: { newProp: true }}});
+      assert.deepEqual( state, { age: 10, sub: { sub: { prop: true, newProp: true }}});
+      assert.equal( newState, state );
+      assert.equal( newState.sub, state.sub );
+      assert.equal( newState.sub.sub, state.sub.sub );
+    });
+    it( 'function patch', () => {
+      const state = { age: 10, foo: 'bar' };
+      mergeInPlace( state, ( s ) => {
+        assert.equal( s, state );
+        assert.deepEqual( s, state );
+        return mergeInPlace( s, { prop: true });
+      });
+    });
+    it( 'deep merge with arr', () => {
+      const state = { foo: 'bar', deep: { arr: [ 1, 2, 3 ], prop: false }};
+      const newState = mergeInPlace( state, { deep: { arr: { 1: 20 }}});
+      assert.equal( state.deep, newState.deep );
+      assert.equal( state.deep.arr, newState.deep.arr );
+      assert.deepEqual( state.deep.arr, [ 1, 20, 3 ]);
+    });
+    it( 'top level SUB', () => {
+      const state = { age: 20, foo: 'bar' };
+      const replacement = { replaced: true };
+      const newState = mergeInPlace( state, () => replacement );
+      assert.notEqual( state, newState );
+      assert.equal( newState, replacement );
+    });
+    it( 'reuse object if same ref when patching', () => {
+      const state = { deep: { prop: true }};
+      const newState = mergeInPlace( state, { deep: state.deep });
+      assert.equal( state, newState ); // TODO: maybe try and be smarter, to avoid copy if patch changes nothing
+      assert.equal( newState.deep, state.deep );
+    });
+    it( 'multi function patch, only copy once', () => {
+      const copies = [];
+      const state = { key:'value' };
+      mergeInPlace( state, Array.from({ length: 5 }, () => state => ( copies.push( state ), state )));
+      assert.equal( copies.length, 5 );
+      assert.equal( typeof copies[0], 'object' );
+      copies.every( copy => assert.equal( copy, copies[0]));
+    });
+    it( 'replace primitive with object and vice versa', () => {
+      const state = { count: 10, foo: { prop: true }};
+      mergeInPlace( state, { count: { prop: true }, foo: 10 });
       assert.deepEqual( state, { count: { prop: true }, foo: 10 });
     });
   });
