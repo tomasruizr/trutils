@@ -48,8 +48,9 @@ const map = ( fn, functor ) => {
   if ( typeof functor.map === 'function' ) return functor.map( fn );
   if ( functor[Symbol.iterator]){
     const result = [];
+    let count = 0;
     for ( const item of functor ) {
-      result.push( fn( item ));
+      result.push( fn( item, count++ ));
     }
     return result;
   }
