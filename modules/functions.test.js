@@ -19,6 +19,7 @@ const {
   ifElse,
   map,
   concat,
+  concatMany,
   traverse,
   reduce,
   zip
@@ -323,12 +324,21 @@ describe( 'Functions', function() {
     });
   });
 
-  describe( 'concat', function() {
+  describe( 'concatMany', function() {
     it( 'concats a list of semigroups', () => {
-      assert.equal( concat( 'a', 'b', 'c' ), 'abc' );
-      assert.deepEqual( concat(['a'], ['b'], ['c']), [ 'a','b','c' ]);
+      assert.equal( concatMany( 'a', 'b', 'c' ), 'abc' );
+      assert.deepEqual( concatMany(['a'], ['b'], ['c']), [ 'a','b','c' ]);
       const All = types.All;
-      assert.equal( concat( All( true ), All( true ), All( true )).x, All( true ).x );
+      assert.equal( concatMany( All( true ), All( true )).x, All( true ).x );
+    });
+  });
+
+  describe( 'concat', function() {
+    it( 'concats two semigroups', () => {
+      assert.equal( concat( 'a', 'b', 'c' ), 'ab' );
+      assert.deepEqual( concat(['a'], ['b'], ['c']), [ 'a','b' ]);
+      const All = types.All;
+      assert.equal( concat( All( true ), All( true )).x, All( true ).x );
     });
   });
 
@@ -344,6 +354,18 @@ describe( 'Functions', function() {
           result;//?
           done();
         });
+    });
+    it( 'traverses one array of X(concatenable) into a X of an array', ( done ) => {
+      const someTask = ( x ) => new Task(( reject, resolve ) => {
+        setTimeout(() => {
+          resolve( x * 2 );
+        }, 100 );
+      });
+      traverse( Task.of, x=> x, [ someTask( 1 ),someTask( 2 ),someTask( 3 ),someTask( 4 ) ])
+        .fork(( err ) => assert( false, err.stack ), ( result ) => {
+          result;//?
+          done();
+        }); 
     });
   });
 

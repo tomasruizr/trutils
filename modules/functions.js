@@ -67,7 +67,10 @@ const reduce = ( reducer, init, collection ) => {
   return acc;
 };
 
-const concat = ( ...semigroup ) => semigroup.slice( 1 ).reduce(( acc, curr )=>
+const concat = curry(( acc, curr ) => 
+  acc.concat( curr ));
+
+const concatMany = ( ...semigroup ) => semigroup.slice( 1 ).reduce(( acc, curr )=>
   acc.concat( curr ), semigroup[0]);
 
 const traverse = curry(( point, fn, array ) =>{
@@ -101,6 +104,7 @@ module.exports = {
   isString,
   map,
   concat,
+  concatMany,
   reduce,
   noop,
   pipe,
