@@ -66,7 +66,7 @@ const dissoc = curry(( objectPath, obj ) => {
   return obj;
 });
 
-function assocPath( objectPath, nValue, obj ) {
+const assocPath = curry(( objectPath, nValue, obj ) => {
   if ( !obj ) return obj => assocPath( objectPath, nValue, obj );
   const path = objectPath.slice( 0 );
   const lastPath = path.pop();
@@ -77,7 +77,7 @@ function assocPath( objectPath, nValue, obj ) {
   }, obj );
   lastPart[lastPath] = nValue;
   return obj;
-}
+});
 
 function dissocPath( objectPath, obj ) {
   if ( !obj ) return obj => dissocPath( objectPath, obj );
