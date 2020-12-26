@@ -10,6 +10,16 @@ const False = () => false;
 const I = ( x ) => x;
 const noop = () => {};
 
+const curry = ( fn, arity ) =>{
+  return function _curry( ...args ){
+    if ( arguments.length >= ( arity && arity + 1 || fn.length )) return fn( ...args );
+    return ( ...argsN )=> _curry(
+      ...( arity ? Array.from( new Array( arity ), ( v, i )=> args[i]) : args ),
+      ...argsN
+    );
+  };
+};
+
 const apply = ( functions, ...value ) => {
   if ( !value.length ) return ( ...curriedValue ) => apply( functions, ...curriedValue );
   return functions.map( f => f( ...value ));
@@ -20,15 +30,7 @@ const ap = ( functions, otherArray ) => {
   return functions.flatMap( fn => otherArray.map( fn ));
 };
 
-const curry = ( fn, arity ) =>{
-  return function _curry( ...args ){
-    if ( arguments.length >= ( arity && arity + 1 || fn.length )) return fn( ...args );
-    return ( ...argsN )=> _curry(
-      ...( arity ? Array.from( new Array( arity ), ( v, i )=> args[i]) : args ),
-      ...argsN
-    );
-  };
-};
+const applyTo = curry(( value, fn ) => fn( value ));
 
 const eq = curry(( expected, actual ) => expected === actual );
 
@@ -89,6 +91,7 @@ module.exports = {
   eq,
   ap,
   apply,
+  applyTo,
   compose,
   curry,
   ensureArray,

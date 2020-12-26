@@ -5,6 +5,7 @@ const {
   eq,
   ap,
   apply,
+  applyTo,
   curry,
   compose,
   pipe,
@@ -207,6 +208,12 @@ describe( 'Functions', function() {
       ]);
       const result = fnList( 1, 2 );
       assert.deepEqual( result, [ 5, 7, 3 ]);
+    });
+  });
+  describe( 'applyTo', function() {
+    it( 'applies value to a functions', () => {
+      const result = applyTo( 12 );
+      assert.deepEqual( result( x=>x + 5 ), 17 );
     });
   });
   
