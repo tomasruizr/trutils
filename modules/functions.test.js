@@ -23,6 +23,7 @@ const {
   concatMany,
   traverse,
   reduce,
+  reduceRight,
   zip
 } = require( './functions.js' );
 const { assert } = require( 'chai' );
@@ -215,6 +216,9 @@ describe( 'Functions', function() {
       const result = applyTo( 12 );
       assert.deepEqual( result( x=>x + 5 ), 17 );
     });
+    it( 'applies value to a functions', () => {
+      assert.deepEqual( applyTo( 12, x=>x + 5 ), 17 );
+    });
   });
   
   describe( 'isObject', function() {
@@ -393,6 +397,25 @@ describe( 'Functions', function() {
       });
     });
   });
+  
+  describe( 'reduceRight', function() {
+    it( 'works on Objects', () => {
+      assert.deepEqual( reduceRight(( acc, val, key ) => {
+        acc.result += val;
+        acc.keys.push( key );
+        return acc;
+      }, { result:0, keys:[]}, {
+        a:1,
+        b:2,
+        c:3,
+        d:4
+      }), {
+        result: 10,
+        keys: [ 'd', 'c', 'b', 'a' ]
+      });
+    });
+  });
+
   describe( 'zip', function() {
     it( 'iterates a list of arrays at the same time', () => {
       const iterations = [];

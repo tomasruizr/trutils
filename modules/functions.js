@@ -69,6 +69,14 @@ const reduce = ( reducer, init, collection ) => {
   return acc;
 };
 
+const reduceRight = ( reducer, init, collection ) => {
+  if ( !collection ) return collection => reduceRight( reducer, init, collection );
+  if ( Array.isArray( collection )) return collection.reduceRight( reducer, init );
+  let acc = init;
+  Object.keys( collection ).reduceRight(( _, key ) => acc = reducer( acc, collection[key], key ), null );
+  return acc;
+};
+
 const concat = curry(( acc, curr ) => 
   acc.concat( curr ));
 
@@ -109,6 +117,7 @@ module.exports = {
   concat,
   concatMany,
   reduce,
+  reduceRight,
   noop,
   pipe,
   True,
